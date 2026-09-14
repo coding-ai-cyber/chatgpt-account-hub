@@ -36,8 +36,40 @@ pub enum DockDisplayMode {
     MenuBarOnly,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum AppLanguage {
+    #[default]
+    ZhCn,
+    En,
+}
+
+impl AppLanguage {
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "zh-CN" => Some(Self::ZhCn),
+            "en" => Some(Self::En),
+            _ => None,
+        }
+    }
+
+    pub fn from_setting(value: &str) -> Self {
+        Self::parse(value).unwrap_or_default()
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::ZhCn => "zh-CN",
+            Self::En => "en",
+        }
+    }
+}
+
 fn default_close_behavior_prompt_enabled() -> bool {
     true
+}
+
+fn default_language_setting() -> String {
+    AppLanguage::default().as_str().to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,6 +79,8 @@ pub struct AppSettings {
     pub dock_display_mode: DockDisplayMode,
     #[serde(default = "default_close_behavior_prompt_enabled")]
     pub close_behavior_prompt_enabled: bool,
+    #[serde(default = "default_language_setting")]
+    pub language: String,
 }
 
 impl Default for AppSettings {
@@ -55,7 +89,49 @@ impl Default for AppSettings {
             tray_display_mode: TrayDisplayMode::default(),
             dock_display_mode: DockDisplayMode::default(),
             close_behavior_prompt_enabled: true,
+            language: default_language_setting(),
         }
+    }
+}
+
+#[cfg(test)]
+mod language_tests {
+    use super::{AppLanguage, AppSettings};
+
+    #[test]
+    fn defaults_to_simplified_chinese() {
+        assert_eq!(AppLanguage::default(), AppLanguage::ZhCn);
+    }
+
+    #[test]
+    fn parses_supported_language_values() {
+        assert_eq!(AppLanguage::parse("zh-CN"), Some(AppLanguage::ZhCn));
+        assert_eq!(AppLanguage::parse("en"), Some(AppLanguage::En));
+    }
+
+    #[test]
+    fn rejects_unsupported_language_values() {
+        assert_eq!(AppLanguage::parse("invalid"), None);
+    }
+
+    #[test]
+    fn invalid_setting_falls_back_to_simplified_chinese() {
+        assert_eq!(AppLanguage::from_setting("invalid"), AppLanguage::ZhCn);
+    }
+
+    #[test]
+    fn maps_languages_to_setting_values() {
+        assert_eq!(AppLanguage::ZhCn.as_str(), "zh-CN");
+        assert_eq!(AppLanguage::En.as_str(), "en");
+    }
+
+    #[test]
+    fn app_settings_defaults_language_to_simplified_chinese() {
+        assert_eq!(AppSettings::default().language, "zh-CN");
+
+        let settings: AppSettings =
+            serde_json::from_str(r#"{"tray_display_mode":"active_usage_text"}"#).unwrap();
+        assert_eq!(settings.language, "zh-CN");
     }
 }
 
@@ -530,5 +606,6 @@ mod tests {
         assert_eq!(settings.tray_display_mode, TrayDisplayMode::ActiveUsageText);
         assert_eq!(settings.dock_display_mode, DockDisplayMode::ShowInDock);
         assert!(settings.close_behavior_prompt_enabled);
+        assert_eq!(settings.language, "zh-CN");
     }
 }

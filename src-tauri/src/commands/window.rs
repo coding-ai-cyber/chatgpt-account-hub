@@ -9,7 +9,7 @@ use tauri::{AppHandle, Manager, Runtime};
 
 use crate::{
     auth::{load_app_settings, save_app_settings},
-    types::{DockDisplayMode, TrayDisplayMode, UsageInfo},
+    types::{AppLanguage, DockDisplayMode, TrayDisplayMode, UsageInfo},
 };
 
 /// Label of the borderless tray popup window.
@@ -116,6 +116,36 @@ pub fn get_display_settings() -> Result<DisplaySettings, String> {
             None
         },
     })
+}
+
+#[tauri::command]
+pub fn get_language() -> String {
+    let settings = load_app_settings().unwrap_or_default();
+    AppLanguage::from_setting(&settings.language)
+        .as_str()
+        .to_string()
+}
+
+pub fn persist_language(language: &str) -> Result<AppLanguage, String> {
+    let language = AppLanguage::parse(language)
+        .ok_or_else(|| format!("Unsupported language setting: {language}"))?;
+    let mut settings = load_app_settings().map_err(|error| error.to_string())?;
+    settings.language = language.as_str().to_string();
+    save_app_settings(&settings).map_err(|error| error.to_string())?;
+    Ok(language)
+}
+
+#[tauri::command]
+pub fn set_language(app: AppHandle, language: String) -> Result<(), String> {
+    persist_language(&language)?;
+    #[cfg(desktop)]
+    {
+        crate::app_menu::refresh(&app).map_err(|error| error.to_string())?;
+        crate::tray::refresh(&app);
+    }
+    #[cfg(not(desktop))]
+    let _ = app;
+    Ok(())
 }
 
 #[tauri::command]

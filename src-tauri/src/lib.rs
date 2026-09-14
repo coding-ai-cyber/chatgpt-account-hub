@@ -14,10 +14,10 @@ use commands::{
     ack_close_behavior_prompt, add_account_from_file, cancel_login, check_codex_processes,
     complete_close_behavior, complete_login, delete_account, export_accounts_full_encrypted_file,
     export_accounts_slim_text, get_account_usage_stats, get_active_account_info,
-    get_dock_display_mode, get_masked_account_ids, get_usage, hide_tray_window,
+    get_dock_display_mode, get_language, get_masked_account_ids, get_usage, hide_tray_window,
     import_accounts_full_encrypted_file, import_accounts_slim_text, kill_codex_processes,
     list_accounts, open_main_window, quit_app, refresh_account_metadata,
-    refresh_all_accounts_usage, rename_account, report_usage, set_dock_display_mode,
+    refresh_all_accounts_usage, rename_account, report_usage, set_dock_display_mode, set_language,
     set_masked_account_ids, start_login, switch_account, warmup_account, warmup_all_accounts,
 };
 use tauri::Emitter;
@@ -61,6 +61,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_display_settings,
+            get_language,
+            set_language,
             commands::set_tray_display_mode,
             commands::open_codex_app,
             commands::get_codex_reopen_info,
