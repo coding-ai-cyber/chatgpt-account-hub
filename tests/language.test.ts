@@ -122,7 +122,21 @@ test('mounts language providers and saves language selection from settings', () 
   assert.match(settingsSource, /const \{ language, setLanguage, t \} = useLanguage\(\);/);
   assert.match(settingsSource, /id="language"[\s\S]*?value=\{language\}[\s\S]*?disabled=\{languageSaving\}/);
   assert.match(settingsSource, /await setLanguage\(nextLanguage\);/);
-  assert.match(settingsSource, /catch \(err\) \{[\s\S]*?setErrorTranslation\("failedToSave"\);[\s\S]*?setError\(String\(err\)\);/);
+  assert.match(settingsSource, /catch \(err\) \{[\s\S]*?setLanguageError\(String\(err\)\);/);
   assert.match(settingsSource, /t\("settings"\)/);
-  assert.match(settingsSource, /t\(errorTranslation, \{ message: error \}\)/);
+  assert.match(settingsSource, /t\("failedToSave", \{ message: languageError \}\)/);
+});
+
+test('keeps language and display setting errors independent', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/components/SettingsModal.tsx', import.meta.url)),
+    'utf8',
+  );
+
+  assert.match(source, /const \[displayError, setDisplayError\] = useState<string \| null>\(null\);/);
+  assert.match(source, /const \[languageError, setLanguageError\] = useState<string \| null>\(null\);/);
+  assert.match(source, /setDisplaySettings\(settings\);\s*setDisplayError\(null\);/);
+  assert.match(source, /catch \(err\) \{\s*setLanguageError\(String\(err\)\);/);
+  assert.match(source, /displayError && <p[\s\S]*?t\("couldNotUpdateDisplaySettings", \{ message: displayError \}\)/);
+  assert.match(source, /languageError && <p[\s\S]*?t\("failedToSave", \{ message: languageError \}\)/);
 });

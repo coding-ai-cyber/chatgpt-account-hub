@@ -7,7 +7,6 @@ import type { Language } from "../lib/language";
 import type { DockDisplayMode } from "../types";
 
 type TrayDisplayMode = "icon_and_session" | "active_usage_text" | "hidden";
-type ErrorTranslation = "couldNotUpdateDisplaySettings" | "failedToSave";
 interface DisplaySettings {
   tray_display_mode: TrayDisplayMode;
   dock_display_mode: DockDisplayMode | null;
@@ -32,8 +31,8 @@ export function SettingsModal({
   const [displaySettings, setDisplaySettings] = useState<DisplaySettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [languageSaving, setLanguageSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [errorTranslation, setErrorTranslation] = useState<ErrorTranslation>("couldNotUpdateDisplaySettings");
+  const [displayError, setDisplayError] = useState<string | null>(null);
+  const [languageError, setLanguageError] = useState<string | null>(null);
   const requestId = useRef(0);
   const desktop = isTauriRuntime();
   const loadDisplaySettings = useCallback(async () => {
@@ -42,10 +41,10 @@ export function SettingsModal({
       const settings = await invokeBackend<DisplaySettings>("get_display_settings");
       if (currentRequest === requestId.current) {
         setDisplaySettings(settings);
-        setError(null);
+        setDisplayError(null);
       }
     } catch (err) {
-      if (currentRequest === requestId.current) setError(String(err));
+      if (currentRequest === requestId.current) setDisplayError(String(err));
     }
   }, []);
 
@@ -63,7 +62,7 @@ export function SettingsModal({
         void loadDisplaySettings();
       }
     }).catch((err) => {
-      if (!disposed) setError(String(err));
+      if (!disposed) setDisplayError(String(err));
     });
     return () => {
       disposed = true;
@@ -74,15 +73,14 @@ export function SettingsModal({
 
   const changeDisplaySetting = async (command: string, mode: string) => {
     setSaving(true);
-    setErrorTranslation("couldNotUpdateDisplaySettings");
-    setError(null);
+    setDisplayError(null);
     try {
       await invokeBackend(command, { mode });
       // Changing tray visibility can also adjust the Dock mode, and vice versa.
       await loadDisplaySettings();
     } catch (err) {
       requestId.current += 1;
-      setError(String(err));
+      setDisplayError(String(err));
     } finally {
       setSaving(false);
     }
@@ -91,12 +89,11 @@ export function SettingsModal({
   const changeLanguage = async (nextLanguage: Language) => {
     if (nextLanguage === language) return;
     setLanguageSaving(true);
-    setError(null);
+    setLanguageError(null);
     try {
       await setLanguage(nextLanguage);
     } catch (err) {
-      setErrorTranslation("failedToSave");
-      setError(String(err));
+      setLanguageError(String(err));
     } finally {
       setLanguageSaving(false);
     }
@@ -144,8 +141,9 @@ export function SettingsModal({
                     </>
                   )}
                 </>
-              ) : !error && <p className="text-sm text-gray-500 dark:text-gray-400">{t("loadingDisplaySettings")}</p>}
-              {error && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{t(errorTranslation, { message: error })}</p>}
+              ) : !displayError && <p className="text-sm text-gray-500 dark:text-gray-400">{t("loadingDisplaySettings")}</p>}
+              {displayError && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{t("couldNotUpdateDisplaySettings", { message: displayError })}</p>}
+              {languageError && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{t("failedToSave", { message: languageError })}</p>}
               <div className="border-t border-gray-100 dark:border-gray-800" />
             </>
           )}
