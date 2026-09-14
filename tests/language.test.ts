@@ -110,3 +110,19 @@ test('persists a normalized backend language after loading it', () => {
     /const nextLanguage = parseLanguage\(await invokeBackend<string>\("get_language"\)\);[\s\S]*?setLanguageState\(nextLanguage\);[\s\S]*?window\.localStorage\.setItem\(LANGUAGE_STORAGE_KEY, nextLanguage\)/,
   );
 });
+
+test('mounts language providers and saves language selection from settings', () => {
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  const mainSource = readFileSync(`${root}/src/main.tsx`, 'utf8');
+  const traySource = readFileSync(`${root}/src/tray-main.tsx`, 'utf8');
+  const settingsSource = readFileSync(`${root}/src/components/SettingsModal.tsx`, 'utf8');
+
+  assert.match(mainSource, /<LanguageProvider>\s*<App\s*\/>\s*<\/LanguageProvider>/);
+  assert.match(traySource, /<LanguageProvider>\s*<TrayMenu\s*\/>\s*<\/LanguageProvider>/);
+  assert.match(settingsSource, /const \{ language, setLanguage, t \} = useLanguage\(\);/);
+  assert.match(settingsSource, /id="language"[\s\S]*?value=\{language\}[\s\S]*?disabled=\{languageSaving\}/);
+  assert.match(settingsSource, /await setLanguage\(nextLanguage\);/);
+  assert.match(settingsSource, /catch \(err\) \{[\s\S]*?setErrorTranslation\("failedToSave"\);[\s\S]*?setError\(String\(err\)\);/);
+  assert.match(settingsSource, /t\("settings"\)/);
+  assert.match(settingsSource, /t\(errorTranslation, \{ message: error \}\)/);
+});
