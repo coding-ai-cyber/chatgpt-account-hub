@@ -79,6 +79,18 @@ test('keeps the visible React copy inventory in the translation dictionary', () 
     'resetsNow', 'resetsIn', 'neverExpiry', 'cannotSwitchWhile', 'codexUsageStatsSource',
     'noFileSelected', 'exportFullEncryptedAccountConfig', 'importFullEncryptedAccountConfig',
     'codexWillOnlyBeClosed', 'unsavedCodexWorkMayBeLost', 'desktopAppNotIdentified',
+    'couldNotCheckRunningCodexProcesses', 'noAccountsAvailableForWarmup', 'warming',
+    'usageRefreshedSuccessfully', 'clickDeleteAgainToConfirmRemoval', 'clipboardUnavailablePleaseCopyManually',
+    'switchedAccountFromTray', 'accountSwitchBlocked', 'accountSwitchedDesktopReopened', 'codexDesktopReopened',
+    'noClosedDesktopAppIdentified', 'autoWarming', 'timedWarming', 'slimExportFailed', 'pleasePasteSlimTextFirst',
+    'slimImportFailed', 'fullEncryptedFileExported', 'fullExportFailed', 'fullImportFailed', 'codexAppOpened',
+    'closeCodex', 'stopsCodexImmediately', 'asksCodexQuitNormally', 'codexDesktopReopensAutomatically',
+    'codexDesktopStaysClosed', 'forceClosing', 'closing', 'generating', 'clipboardUnavailableCopyLinkManually',
+    'adding', 'sendingWarmupRequest', 'sendMinimalWarmupRequest', 'autoWarmupEnabledForAllAccounts',
+    'disableAutoWarmupForThisAccount', 'enableAutoWarmupForThisAccount', 'usageStatsChatGPTOnly',
+    'usageStatsUnavailable',
+    'disableAutoWarmupForAllAccounts', 'enableAutoWarmupForAllAccounts', 'refreshUsage',
+    'waiting', 'waitingReset', 'iconAndSession', 'pleaseSelectAuthFile', 'unknown',
   ];
   const englishBody = source.match(/const englishTranslations = \{([\s\S]*?)\} as const;/)?.[1] ?? '';
   const missing = requiredKeys.filter((key) => !new RegExp(`\\b${key}:`).test(englishBody));
