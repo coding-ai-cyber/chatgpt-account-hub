@@ -49,3 +49,50 @@ test('keeps Chinese and English translation keys in sync', () => {
     englishKeys,
   );
 });
+
+test('keeps the visible React copy inventory in the translation dictionary', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/lib/i18n.tsx', import.meta.url)),
+    'utf8',
+  );
+  const requiredKeys = [
+    'minimize', 'restore', 'maximize', 'closeRunningCodexProcesses', 'openCodexApp',
+    'opening', 'showAllAccountNamesAndEmails', 'hideAllAccountNamesAndEmails',
+    'refreshingAllUsage', 'refreshAllUsage', 'warmingUpAllAccounts', 'warmUpAllAccounts',
+    'hideAccountSearch', 'searchAccounts', 'menu', 'autoWarmUp', 'timer', 'appearance',
+    'timedWarmup', 'exporting', 'exportSlimText', 'importing', 'importSlimText',
+    'exportFullEncryptedFile', 'importFullEncryptedFile', 'loadingAccounts',
+    'failedToLoadAccounts', 'searchAccountsByNameOrEmail', 'clearAccountSearch',
+    'resetEarliestToLatest', 'resetLatestToEarliest', 'checkingDesktopApp',
+    'closeAndSwitchAccount', 'dontAskAgain', 'exportStringWillAppearHere',
+    'pasteConfigStringHere', 'copyString', 'importMissingAccounts', 'never', 'justNow',
+    'neverUsed', 'apiKey', 'clickToRename', 'showInfo', 'hideInfo',
+    'closeRunningCodexProcessesAndSwitchAccount', 'switching', 'hideUsageStatistics',
+    'showUsageStatistics', 'removeAccount', 'chatGPTLogin', 'importFile',
+    'leaveBlankToUseEmail', 'waitingForBrowserLogin', 'copiedBang', 'generateLoginLink',
+    'weeklyLimit', 'atLeastOneIconVisible', 'loadingDisplaySettings',
+    'couldNotUpdateDisplaySettings', 'askEveryTime', 'gracefullyClose', 'reopenDesktopApp',
+    'keepClosed', 'done', 'downloadingUpdate', 'all', 'allReported', 'tokenActivity',
+    'tokenActivityRange', 'longestTask', 'longestStreak', 'days', 'fastMode', 'reasoning',
+    'skillsExplored', 'totalThreads', 'statsAsOf', 'chatGPTBackend', 'refreshUsageStats',
+    'lifetime', 'reported', 'currentStreak', 'peakDay', 'resetCreditExpiryDetails',
+    'resetsNow', 'resetsIn', 'neverExpiry', 'cannotSwitchWhile', 'codexUsageStatsSource',
+    'noFileSelected', 'exportFullEncryptedAccountConfig', 'importFullEncryptedAccountConfig',
+    'codexWillOnlyBeClosed', 'unsavedCodexWorkMayBeLost', 'desktopAppNotIdentified',
+  ];
+  const englishBody = source.match(/const englishTranslations = \{([\s\S]*?)\} as const;/)?.[1] ?? '';
+  const missing = requiredKeys.filter((key) => !new RegExp(`\\b${key}:`).test(englishBody));
+  assert.deepEqual(missing, []);
+});
+
+test('persists a normalized backend language after loading it', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/lib/i18n.tsx', import.meta.url)),
+    'utf8',
+  );
+
+  assert.match(
+    source,
+    /const nextLanguage = parseLanguage\(await invokeBackend<string>\("get_language"\)\);[\s\S]*?setLanguageState\(nextLanguage\);[\s\S]*?window\.localStorage\.setItem\(LANGUAGE_STORAGE_KEY, nextLanguage\)/,
+  );
+});
