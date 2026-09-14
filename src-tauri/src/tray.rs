@@ -19,7 +19,8 @@ use crate::{
         is_codex_running_switch_block, restore_main_window, switch_account_by_id,
         window::TRAY_WINDOW,
     },
-    types::{AccountsStore, TrayDisplayMode, UsageInfo},
+    i18n::{menu_text, MenuTextKey},
+    types::{AccountsStore, AppLanguage, TrayDisplayMode, UsageInfo},
 };
 
 static TRAY_USAGE: LazyLock<Mutex<HashMap<String, UsageInfo>>> =
@@ -315,13 +316,18 @@ fn position_near_cursor<R: Runtime>(
 // ============================================================================
 
 fn build_menu<R: Runtime>(app: &AppHandle<R>, store: &AccountsStore) -> tauri::Result<Menu<R>> {
+    let settings = load_app_settings().unwrap_or_default();
+    let language = AppLanguage::from_setting(&settings.language);
     let menu = Menu::new(app)?;
 
     if store.accounts.is_empty() {
         menu.append(
-            &MenuItemBuilder::with_id("empty", "No accounts configured")
-                .enabled(false)
-                .build(app)?,
+            &MenuItemBuilder::with_id(
+                "empty",
+                menu_text(language, MenuTextKey::NoAccountsConfigured),
+            )
+            .enabled(false)
+            .build(app)?,
         )?;
     } else {
         for account in &store.accounts {
@@ -336,30 +342,48 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, store: &AccountsStore) -> tauri::R
 
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     #[cfg(target_os = "macos")]
-    append_dock_settings_menu(app, &menu)?;
+    append_dock_settings_menu(app, &menu, language)?;
     #[cfg(target_os = "macos")]
     menu.append(&PredefinedMenuItem::separator(app)?)?;
-    menu.append(&MenuItemBuilder::with_id(OPEN_ITEM_ID, "Open Codex Switcher").build(app)?)?;
-    menu.append(&MenuItemBuilder::with_id(QUIT_ITEM_ID, "Quit").build(app)?)?;
+    menu.append(
+        &MenuItemBuilder::with_id(
+            OPEN_ITEM_ID,
+            menu_text(language, MenuTextKey::OpenCodexSwitcher),
+        )
+        .build(app)?,
+    )?;
+    menu.append(
+        &MenuItemBuilder::with_id(QUIT_ITEM_ID, menu_text(language, MenuTextKey::Quit)).build(app)?,
+    )?;
     Ok(menu)
 }
 
 #[cfg(target_os = "macos")]
-fn append_dock_settings_menu<R: Runtime>(app: &AppHandle<R>, menu: &Menu<R>) -> tauri::Result<()> {
+fn append_dock_settings_menu<R: Runtime>(
+    app: &AppHandle<R>,
+    menu: &Menu<R>,
+    language: AppLanguage,
+) -> tauri::Result<()> {
     let settings = load_app_settings().unwrap_or_default();
     let dock_settings = Submenu::with_items(
         app,
-        "Dock Icon",
+        menu_text(language, MenuTextKey::DockIcon),
         true,
         &[
-            &CheckMenuItemBuilder::with_id(crate::app_menu::DOCK_SHOW_IN_DOCK_ID, "Show in Dock")
-                .checked(settings.dock_display_mode == crate::app_menu::DockDisplayMode::ShowInDock)
-                .build(app)?,
-            &CheckMenuItemBuilder::with_id(crate::app_menu::DOCK_MENU_BAR_ONLY_ID, "Menu Bar Only")
-                .checked(
-                    settings.dock_display_mode == crate::app_menu::DockDisplayMode::MenuBarOnly,
-                )
-                .build(app)?,
+            &CheckMenuItemBuilder::with_id(
+                crate::app_menu::DOCK_SHOW_IN_DOCK_ID,
+                menu_text(language, MenuTextKey::ShowInDock),
+            )
+            .checked(settings.dock_display_mode == crate::app_menu::DockDisplayMode::ShowInDock)
+            .build(app)?,
+            &CheckMenuItemBuilder::with_id(
+                crate::app_menu::DOCK_MENU_BAR_ONLY_ID,
+                menu_text(language, MenuTextKey::MenuBarOnly),
+            )
+            .checked(
+                settings.dock_display_mode == crate::app_menu::DockDisplayMode::MenuBarOnly,
+            )
+            .build(app)?,
         ],
     )?;
     menu.append(&dock_settings)?;

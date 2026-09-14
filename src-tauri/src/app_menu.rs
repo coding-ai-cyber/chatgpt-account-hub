@@ -9,7 +9,8 @@ use tauri::{
 pub(crate) use crate::types::DockDisplayMode;
 use crate::{
     auth::{load_app_settings, save_app_settings},
-    types::{AppSettings, TrayDisplayMode},
+    i18n::{menu_text, MenuTextKey},
+    types::{AppLanguage, AppSettings, TrayDisplayMode},
 };
 
 const TRAY_ICON_AND_SESSION_ID: &str = "tray-display-icon-and-session";
@@ -187,6 +188,7 @@ fn apply_dock_display_mode<R: Runtime>(app: &AppHandle<R>, mode: DockDisplayMode
 }
 
 fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::Result<Menu<R>> {
+    let language = AppLanguage::from_setting(&settings.language);
     let pkg_info = app.package_info();
     let config = app.config();
     let about_metadata = AboutMetadata {
@@ -203,13 +205,13 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
 
     let tray_settings = Submenu::with_items(
         app,
-        "Tray",
+        menu_text(language, MenuTextKey::Tray),
         true,
         &[
             &CheckMenuItem::with_id(
                 app,
                 TRAY_ICON_AND_SESSION_ID,
-                "Icon + Session",
+                menu_text(language, MenuTextKey::IconAndSession),
                 true,
                 settings.tray_display_mode == TrayDisplayMode::IconAndSession,
                 None::<&str>,
@@ -217,7 +219,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
             &CheckMenuItem::with_id(
                 app,
                 TRAY_ACTIVE_USAGE_TEXT_ID,
-                "Hourly + Weekly",
+                menu_text(language, MenuTextKey::HourlyAndWeekly),
                 true,
                 settings.tray_display_mode == TrayDisplayMode::ActiveUsageText,
                 None::<&str>,
@@ -225,7 +227,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
             &CheckMenuItem::with_id(
                 app,
                 TRAY_HIDDEN_ID,
-                "Hidden",
+                menu_text(language, MenuTextKey::Hidden),
                 true,
                 settings.tray_display_mode == TrayDisplayMode::Hidden,
                 None::<&str>,
@@ -236,13 +238,13 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
     #[cfg(target_os = "macos")]
     let dock_settings = Submenu::with_items(
         app,
-        "Dock Icon",
+        menu_text(language, MenuTextKey::DockIcon),
         true,
         &[
             &CheckMenuItem::with_id(
                 app,
                 DOCK_SHOW_IN_DOCK_ID,
-                "Show in Dock",
+                menu_text(language, MenuTextKey::ShowInDock),
                 true,
                 settings.dock_display_mode == DockDisplayMode::ShowInDock,
                 None::<&str>,
@@ -250,7 +252,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
             &CheckMenuItem::with_id(
                 app,
                 DOCK_MENU_BAR_ONLY_ID,
-                "Menu Bar Only",
+                menu_text(language, MenuTextKey::MenuBarOnly),
                 true,
                 settings.dock_display_mode == DockDisplayMode::MenuBarOnly,
                 None::<&str>,
@@ -261,7 +263,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
     let desktop_reopen_settings = MenuItem::with_id(
         app,
         DESKTOP_REOPEN_SETTINGS_ID,
-        "Reopen Codex after force close...",
+        menu_text(language, MenuTextKey::ReopenCodexAfterForceClose),
         cfg!(any(target_os = "macos", windows)),
         None::<&str>,
     )?;
@@ -269,7 +271,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
     #[cfg(target_os = "macos")]
     let settings_menu = Submenu::with_items(
         app,
-        "Settings",
+        menu_text(language, MenuTextKey::Settings),
         true,
         &[&tray_settings, &dock_settings, &desktop_reopen_settings],
     )?;
@@ -277,14 +279,14 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
     #[cfg(not(target_os = "macos"))]
     let settings_menu = Submenu::with_items(
         app,
-        "Settings",
+        menu_text(language, MenuTextKey::Settings),
         true,
         &[&tray_settings, &desktop_reopen_settings],
     )?;
 
     let window_menu = Submenu::with_items(
         app,
-        "Window",
+        menu_text(language, MenuTextKey::Window),
         true,
         &[
             &PredefinedMenuItem::minimize(app, None)?,
@@ -295,7 +297,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
         ],
     )?;
 
-    let help_menu = Submenu::with_items(app, "Help", true, &[])?;
+    let help_menu = Submenu::with_items(app, menu_text(language, MenuTextKey::Help), true, &[])?;
 
     Menu::with_items(
         app,
@@ -327,7 +329,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
             )))]
             &Submenu::with_items(
                 app,
-                "File",
+                menu_text(language, MenuTextKey::File),
                 true,
                 &[
                     &PredefinedMenuItem::close_window(app, None)?,
@@ -337,7 +339,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
             )?,
             &Submenu::with_items(
                 app,
-                "Edit",
+                menu_text(language, MenuTextKey::Edit),
                 true,
                 &[
                     &PredefinedMenuItem::undo(app, None)?,
@@ -352,7 +354,7 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>, settings: &AppSettings) -> tauri::
             #[cfg(target_os = "macos")]
             &Submenu::with_items(
                 app,
-                "View",
+                menu_text(language, MenuTextKey::View),
                 true,
                 &[&PredefinedMenuItem::fullscreen(app, None)?],
             )?,

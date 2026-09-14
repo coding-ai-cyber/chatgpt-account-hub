@@ -5,6 +5,7 @@ pub mod api;
 pub mod app_menu;
 pub mod auth;
 pub mod commands;
+pub mod i18n;
 #[cfg(desktop)]
 pub mod tray;
 pub mod types;
