@@ -1,6 +1,13 @@
 import type { ImportAccountsSummary } from "../types";
+import type { Translate } from "./i18n";
 
 export type FileSource = string | File;
+
+let platformTranslate: Translate | null = null;
+
+export function setPlatformTranslate(translate: Translate | null): void {
+  platformTranslate = translate;
+}
 
 export function isTauriRuntime(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -8,7 +15,8 @@ export function isTauriRuntime(): boolean {
 
 export async function invokeBackend<T>(
   command: string,
-  args?: Record<string, unknown>
+  args?: Record<string, unknown>,
+  t: Translate | null = platformTranslate,
 ): Promise<T> {
   if (isTauriRuntime()) {
     const { invoke } = await import("@tauri-apps/api/core");
@@ -26,7 +34,9 @@ export async function invokeBackend<T>(
     const message =
       typeof payload?.error === "string"
         ? payload.error
-        : `Request failed with status ${response.status}`;
+        : t
+          ? t("requestFailedWithStatus", { status: response.status })
+          : `Request failed with status ${response.status}`;
     throw new Error(message);
   }
 
@@ -43,13 +53,13 @@ export async function openExternalUrl(url: string): Promise<void> {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-export async function pickAuthJsonFile(): Promise<FileSource | null> {
+export async function pickAuthJsonFile(t: Translate): Promise<FileSource | null> {
   if (isTauriRuntime()) {
     const { open } = await import("@tauri-apps/plugin-dialog");
     const selected = await open({
       multiple: false,
       filters: [{ name: "JSON", extensions: ["json"] }],
-      title: "Select auth.json file",
+      title: t("selectAuthFile"),
     });
 
     if (!selected || Array.isArray(selected)) return null;
@@ -59,21 +69,21 @@ export async function pickAuthJsonFile(): Promise<FileSource | null> {
   return pickBrowserFile(".json,application/json");
 }
 
-export async function exportFullBackupFile(): Promise<boolean> {
+export async function exportFullBackupFile(t: Translate): Promise<boolean> {
   if (isTauriRuntime()) {
     const { save } = await import("@tauri-apps/plugin-dialog");
     const selected = await save({
-      title: "Export Full Encrypted Account Config",
+      title: t("exportFullEncryptedAccountConfig"),
       defaultPath: "codex-switcher-full.cswf",
-      filters: [{ name: "Codex Switcher Full Backup", extensions: ["cswf"] }],
+      filters: [{ name: t("fullEncryptedBackup"), extensions: ["cswf"] }],
     });
 
     if (!selected) return false;
-    await invokeBackend("export_accounts_full_encrypted_file", { path: selected });
+    await invokeBackend("export_accounts_full_encrypted_file", { path: selected }, t);
     return true;
   }
 
-  const contentsBase64 = await invokeBackend<string>("export_accounts_full_encrypted_bytes");
+  const contentsBase64 = await invokeBackend<string>("export_accounts_full_encrypted_bytes", undefined, t);
   downloadBase64File(
     contentsBase64,
     "codex-switcher-full.cswf",
@@ -82,19 +92,19 @@ export async function exportFullBackupFile(): Promise<boolean> {
   return true;
 }
 
-export async function importFullBackupFile(): Promise<ImportAccountsSummary | null> {
+export async function importFullBackupFile(t: Translate): Promise<ImportAccountsSummary | null> {
   if (isTauriRuntime()) {
     const { open } = await import("@tauri-apps/plugin-dialog");
     const selected = await open({
       multiple: false,
-      title: "Import Full Encrypted Account Config",
-      filters: [{ name: "Codex Switcher Full Backup", extensions: ["cswf"] }],
+      title: t("importFullEncryptedAccountConfig"),
+      filters: [{ name: t("fullEncryptedBackup"), extensions: ["cswf"] }],
     });
 
     if (!selected || Array.isArray(selected)) return null;
     return invokeBackend<ImportAccountsSummary>("import_accounts_full_encrypted_file", {
       path: selected,
-    });
+    }, t);
   }
 
   const selected = await pickBrowserFile(".cswf,application/octet-stream");
@@ -103,11 +113,11 @@ export async function importFullBackupFile(): Promise<ImportAccountsSummary | nu
   const contentsBase64 = await fileToBase64(selected);
   return invokeBackend<ImportAccountsSummary>("import_accounts_full_encrypted_bytes", {
     contentsBase64,
-  });
+  }, t);
 }
 
-export function describeFileSource(source: FileSource | null): string {
-  if (!source) return "No file selected";
+export function describeFileSource(source: FileSource | null, t: Translate): string {
+  if (!source) return t("noFileSelected");
   return typeof source === "string" ? source : source.name;
 }
 

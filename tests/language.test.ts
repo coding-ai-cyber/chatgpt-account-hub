@@ -93,10 +93,162 @@ test('keeps the visible React copy inventory in the translation dictionary', () 
     'waiting', 'waitingReset', 'iconAndSession', 'pleaseSelectAuthFile', 'unknown',
     'autoOn', 'autoOff', 'timedOff', 'timedAt', 'last30Days', 'last3Months', 'last6Months',
     'last7DaysLabel',
+    'requestFailedWithStatus', 'codexProcessesRunning', 'switchFailed',
+    'couldNotSavePreference', 'couldNotSaveClosePreference', 'closeFailed',
+    'switchedAccountAfterClosing', 'codexClosedAccountSwitchedReopenFailed',
+    'codexClosedReopenFailed', 'switchFailedAfterClosing', 'warmupSentFor',
+    'warmupFailedFor', 'warmupSentForAll', 'warmupPartialFailure', 'warmupAllFailed',
+    'autoWarmupSentFor', 'autoWarmupFailedFor', 'timedWarmupSent',
+    'timedWarmupPartialFailure', 'slimTextExported', 'importSummary', 'openCodexFailed',
+    'noTimesAdded', 'removeTime', 'add', 'noAccountsYet', 'addFirstAccount',
+    'noMatchingAccounts', 'tryDifferentAccount', 'activeAccount', 'otherAccountsCount',
+    'otherAccountsFilteredCount', 'sort', 'remainingHighestToLowest',
+    'remainingLowestToHighest', 'expiryEarliestToLatest', 'expiryLatestToEarliest',
+    'closeRunningCodexQuestion', 'closeProcessesBlockingSwitch',
+    'codexCloseSettingSummary', 'forceCloseCodex', 'rememberSelection',
+    'afterClosingSwitchTo', 'reopenCodexDesktopAfterClose', 'keepSwitcherInDock',
+    'closedWindowDockOrMenuBar', 'changeLaterFromTray', 'keepInDock',
+    'existingAccountsKept', 'slimStringContainsSecrets', 'accountNameOptional',
+    'openFollowingLoginLink', 'oauthSameHost', 'generateLoginLinkHelp', 'browse',
+    'importAuthJsonHelp', 'import', 'fetchingUsage', 'noRateLimitData',
+    'fiveHourLimit', 'percentLeft', 'credits', 'secondsAgo', 'minutesAgo',
+    'hoursAgo', 'expiredOn', 'untilDate', 'dailyActivityUnavailable',
+    'thirtyDaysShort', 'threeMonthsShort', 'sixMonthsShort', 'moreUsageDetails',
+    'activityInsights', 'mostUsedPlugins', 'runs', 'updatedAgo', 'last7DaysTitle',
+    'availableResets', 'oneReset', 'multipleResets', 'noExpiryLower',
+    'expiryUnavailableLower', 'closestExpiry', 'clickForExpiryDetails',
+    'resetOrdinal', 'timesShownLocal', 'update', 'updateReady', 'restart',
+    'updateInstallFailed', 'dismiss',
   ];
   const englishBody = source.match(/const englishTranslations = \{([\s\S]*?)\} as const;/)?.[1] ?? '';
   const missing = requiredKeys.filter((key) => !new RegExp(`\\b${key}:`).test(englishBody));
   assert.deepEqual(missing, []);
+});
+
+test('routes the complete visible React copy inventory through useLanguage', () => {
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  const expectedKeysByFile: Record<string, string[]> = {
+    'src/App.tsx': [
+      'unknownError', 'couldNotCheckRunningCodexProcesses', 'switchFailed',
+      'switchedAccountFromTray', 'accountSwitchBlocked', 'closeFailed',
+      'couldNotSavePreference', 'couldNotSaveClosePreference',
+      'switchedAccountAfterClosing', 'accountSwitchedDesktopReopened',
+      'codexDesktopReopened', 'codexClosedAccountSwitchedReopenFailed',
+      'codexClosedReopenFailed', 'noClosedDesktopAppIdentified',
+      'switchFailedAfterClosing', 'warmupSentFor', 'warmupFailedFor',
+      'noAccountsAvailableForWarmup', 'warmupSentForAll', 'warmupPartialFailure',
+      'warmupAllFailed', 'autoWarmupSentFor', 'autoWarmupFailedFor',
+      'timedWarmupSent', 'timedWarmupPartialFailure', 'slimTextExported',
+      'slimExportFailed', 'pleasePasteSlimTextFirst', 'importSummary',
+      'slimImportFailed', 'fullEncryptedFileExported', 'fullExportFailed',
+      'fullImportFailed', 'codexAppOpened', 'openCodexFailed', 'minimize',
+      'restore', 'maximize', 'close', 'codexProcessesRunning',
+      'closeRunningCodexProcesses', 'openCodexApp', 'opening',
+      'showAllAccountNamesAndEmails', 'hideAllAccountNamesAndEmails',
+      'refreshingAllUsage', 'refreshAllUsage', 'warmingUpAllAccounts',
+      'warmUpAllAccounts', 'hideAccountSearch', 'searchAccounts', 'menu',
+      'settings', 'autoWarmUp', 'timer', 'appearance', 'dark', 'light',
+      'timedWarmup', 'noTimesAdded', 'removeTime', 'add', 'account',
+      'addAccount', 'exporting', 'exportSlimText', 'importing', 'importSlimText',
+      'exportFullEncryptedFile', 'importFullEncryptedFile', 'loadingAccounts',
+      'failedToLoadAccounts', 'noAccountsYet', 'addFirstAccount',
+      'noMatchingAccounts', 'tryDifferentAccount', 'searchAccountsByNameOrEmail',
+      'clearAccountSearch', 'activeAccount', 'otherAccountsCount',
+      'otherAccountsFilteredCount', 'sort', 'resetEarliestToLatest',
+      'resetLatestToEarliest', 'remainingHighestToLowest',
+      'remainingLowestToHighest', 'expiryEarliestToLatest',
+      'expiryLatestToEarliest', 'usageRefreshedSuccessfully',
+      'clickDeleteAgainToConfirmRemoval', 'closeRunningCodexQuestion',
+      'closeProcessesBlockingSwitch', 'codexCloseSettingSummary',
+      'forceCloseCodex', 'rememberSelection', 'stopsCodexImmediately',
+      'asksCodexQuitNormally', 'afterClosingSwitchTo', 'checkingDesktopApp',
+      'codexDesktopReopensAutomatically', 'codexDesktopStaysClosed',
+      'changeLaterInSettings', 'reopenCodexDesktopAfterClose',
+      'terminalSessionsWillNotReopen', 'codexWillOnlyBeClosed',
+      'unsavedCodexWorkMayBeLost', 'cancel', 'forceClosing', 'closing',
+      'closeAndSwitchAccount', 'closeCodex', 'keepSwitcherInDock',
+      'closedWindowDockOrMenuBar', 'changeLaterFromTray', 'dontAskAgain',
+      'keepInDock', 'menuBarOnly', 'existingAccountsKept',
+      'slimStringContainsSecrets', 'generating', 'exportStringWillAppearHere',
+      'pasteConfigStringHere', 'clipboardUnavailablePleaseCopyManually',
+      'copied', 'copyString', 'importMissingAccounts',
+    ],
+    'src/TrayMenu.tsx': [
+      'unknownError', 'codexUsageStatsSource', 'disableAutoWarmupForAllAccounts',
+      'enableAutoWarmupForAllAccounts', 'autoOn', 'autoOff', 'refreshUsage',
+      'loading', 'noAccountsConfigured', 'session', 'weekly', 'percentLeft',
+      'resetsNow', 'resetsIn', 'usageUnavailable', 'today', 'last7Days',
+      'dock', 'show', 'menuBar', 'openCodexSwitcher', 'quit',
+    ],
+    'src/components/AccountCard.tsx': [
+      'never', 'justNow', 'secondsAgo', 'minutesAgo', 'hoursAgo',
+      'expiryUnavailable', 'expiredOn', 'untilDate', 'apiKey', 'unknown',
+      'clickToRename', 'refreshUsage', 'showInfo', 'hideInfo', 'lastUpdated',
+      'active', 'closeRunningCodexProcessesAndSwitchAccount', 'switching',
+      'switch', 'sendingWarmupRequest', 'sendMinimalWarmupRequest',
+      'autoWarmupEnabledForAllAccounts', 'disableAutoWarmupForThisAccount',
+      'enableAutoWarmupForThisAccount', 'hideUsageStatistics',
+      'showUsageStatistics', 'removeAccount',
+    ],
+    'src/components/AccountUsageStats.tsx': [
+      'codexUsageStatsSource', 'justNow', 'minutesAgo', 'hoursAgo',
+      'thirtyDaysShort', 'threeMonthsShort', 'sixMonthsShort', 'all',
+      'last30Days', 'last3Months', 'last6Months', 'allReported',
+      'dailyActivityUnavailable', 'tokenActivity', 'tokenActivityRange',
+      'moreUsageDetails', 'reported', 'longestTask', 'longestStreak', 'days',
+      'activityInsights', 'fastMode', 'reasoning', 'skillsExplored',
+      'totalThreads', 'mostUsedPlugins', 'runs', 'usageStatsChatGPTOnly',
+      'statsAsOf', 'chatGPTBackend', 'updatedAgo', 'refreshUsageStats',
+      'lifetime', 'today', 'last7DaysTitle', 'currentStreak', 'peakDay',
+      'tokens', 'usageStatsUnavailable',
+    ],
+    'src/components/AddAccountModal.tsx': [
+      'pleaseSelectAuthFile', 'addAccount', 'chatGPTLogin', 'importFile',
+      'accountNameOptional', 'leaveBlankToUseEmail', 'waitingForBrowserLogin',
+      'openFollowingLoginLink', 'clipboardUnavailableCopyLinkManually',
+      'copiedBang', 'copy', 'open', 'oauthSameHost', 'generateLoginLinkHelp',
+      'selectAuthFile', 'browse', 'importAuthJsonHelp', 'cancel', 'adding',
+      'generateLoginLink', 'import',
+    ],
+    'src/components/ResetCreditsMenu.tsx': [
+      'noExpiry', 'expiryUnavailable', 'expiresOn', 'oneReset',
+      'multipleResets', 'noExpiryLower', 'expiryUnavailableLower',
+      'closestExpiry', 'clickForExpiryDetails', 'resetCreditExpiryDetails',
+      'availableResets', 'resetOrdinal', 'timesShownLocal',
+    ],
+    'src/components/UpdateChecker.tsx': [
+      'updateAvailable', 'later', 'update', 'downloadingUpdate',
+      'updateReady', 'restart', 'updateInstallFailed', 'dismiss',
+    ],
+    'src/components/UsageBar.tsx': [
+      'resetsNow', 'percentLeft', 'resetsIn', 'fetchingUsage',
+      'noRateLimitData', 'fiveHourLimit', 'weeklyLimit', 'credits',
+    ],
+  };
+
+  for (const [relativePath, keys] of Object.entries(expectedKeysByFile)) {
+    const source = readFileSync(`${root}/${relativePath}`, 'utf8');
+    assert.match(source, /useLanguage\(\)/, `${relativePath} must use the shared language context`);
+    for (const key of keys) {
+      assert.match(source, new RegExp(`t\\(["']${key}["']`), `${relativePath} must translate ${key}`);
+    }
+  }
+
+  const traySource = readFileSync(`${root}/src/TrayMenu.tsx`, 'utf8');
+  assert.match(traySource, /languageLocale\(language\)/);
+
+  const platformSource = readFileSync(`${root}/src/lib/platform.ts`, 'utf8');
+  assert.match(platformSource, /import type \{ Translate \} from "\.\/i18n"/);
+  for (const key of [
+    'requestFailedWithStatus', 'selectAuthFile', 'exportFullEncryptedAccountConfig',
+    'importFullEncryptedAccountConfig', 'fullEncryptedBackup', 'noFileSelected',
+  ]) {
+    assert.match(platformSource, new RegExp(`t\\(["']${key}["']`), `platform.ts must translate ${key}`);
+  }
+  assert.match(platformSource, /export function setPlatformTranslate\(translate: Translate \| null\)/);
+
+  const i18nSource = readFileSync(`${root}/src/lib/i18n.tsx`, 'utf8');
+  assert.match(i18nSource, /setPlatformTranslate\(t\)/);
 });
 
 test('persists a normalized backend language after loading it', () => {
@@ -139,4 +291,13 @@ test('keeps language and display setting errors independent', () => {
   assert.match(source, /catch \(err\) \{\s*setLanguageError\(String\(err\)\);/);
   assert.match(source, /displayError && <p[\s\S]*?t\("couldNotUpdateDisplaySettings", \{ message: displayError \}\)/);
   assert.match(source, /languageError && <p[\s\S]*?t\("failedToSave", \{ message: languageError \}\)/);
+});
+
+test('interpolates arbitrary named translation parameters', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/lib/i18n.tsx', import.meta.url)),
+    'utf8',
+  );
+
+  assert.match(source, /\\\{\(\[A-Za-z\]\[A-Za-z0-9\]\*\)\\\}\/g/);
 });

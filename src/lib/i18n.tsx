@@ -16,7 +16,7 @@ import {
   parseLanguage,
   type Language,
 } from "./language";
-import { invokeBackend, isTauriRuntime } from "./platform";
+import { invokeBackend, isTauriRuntime, setPlatformTranslate } from "./platform";
 
 export type TranslationParams = Record<string, string | number>;
 
@@ -280,6 +280,101 @@ const englishTranslations = {
   last3Months: "Last 3 months",
   last6Months: "Last 6 months",
   last7DaysLabel: "Last 7 days",
+  requestFailedWithStatus: "Request failed with status {status}",
+  codexProcessesRunning: "{count} Codex running",
+  switchFailed: "Switch failed: {message}",
+  couldNotSavePreference: "Could not save preference: {message}",
+  couldNotSaveClosePreference: "Could not save close preference: {message}",
+  closeFailed: "Close failed: {message}",
+  switchedAccountAfterClosing: "Switched account after {mode} Codex.",
+  codexClosedAccountSwitchedReopenFailed: "Codex closed and account switched, but reopening failed: {message}",
+  codexClosedReopenFailed: "Codex closed, but reopening failed: {message}",
+  switchFailedAfterClosing: "Switch failed after closing Codex: {message}",
+  warmupSentFor: "Warm-up sent for {name}",
+  warmupFailedFor: "Warm-up failed for {name}: {message}",
+  warmupSentForAll: "Warm-up sent for all {count} accounts",
+  warmupPartialFailure: "Warmed {warmed}/{count}. Failed: {failed}",
+  warmupAllFailed: "Warm-up all failed: {message}",
+  autoWarmupSentFor: "Auto {mode} warm-up sent for {name}",
+  autoWarmupFailedFor: "Auto warm-up failed for {name}: {message}",
+  timedWarmupSent: "Timed warm-up sent for {count} accounts",
+  timedWarmupPartialFailure: "Timed warm-up: {warmed} ok, {failed} failed",
+  slimTextExported: "Slim text exported ({count} accounts).",
+  importSummary: "Imported {imported}, skipped {skipped} (total {total})",
+  openCodexFailed: "Open Codex failed: {message}",
+  noTimesAdded: "No times added yet.",
+  removeTime: "Remove {time}",
+  add: "Add",
+  noAccountsYet: "No accounts yet",
+  addFirstAccount: "Add your first Codex account to get started",
+  noMatchingAccounts: "No matching accounts",
+  tryDifferentAccount: "Try a different account name or email address.",
+  activeAccount: "Active Account",
+  otherAccountsCount: "Other Accounts ({count})",
+  otherAccountsFilteredCount: "Other Accounts ({visible} of {total})",
+  sort: "Sort",
+  remainingHighestToLowest: "% remaining: highest to lowest",
+  remainingLowestToHighest: "% remaining: lowest to highest",
+  expiryEarliestToLatest: "Expiry: earliest to latest",
+  expiryLatestToEarliest: "Expiry: latest to earliest",
+  closeRunningCodexQuestion: "Close running Codex processes?",
+  closeProcessesBlockingSwitch: "This will {mode} {count} running Codex process(es) that currently block account switching.",
+  codexCloseSettingSummary: "Codex will {mode}. You can change this in Settings.",
+  forceCloseAction: "force close",
+  forceClosedAction: "be force closed",
+  gracefulCloseAction: "close gracefully",
+  forceCloseCodex: "Force close Codex",
+  rememberSelection: "Remember this selection",
+  afterClosingSwitchTo: "After closing Codex, Codex Switcher will switch to {name}.",
+  reopenCodexDesktopAfterClose: "Reopen Codex desktop after close",
+  keepSwitcherInDock: "Keep Codex Switcher in the Dock?",
+  closedWindowDockOrMenuBar: "When the window is closed, Codex Switcher can stay in the Dock or live only in the menu bar.",
+  changeLaterFromTray: "You can always change this later from the tray popup.",
+  keepInDock: "Keep in Dock",
+  existingAccountsKept: "Existing accounts are kept. Only missing accounts are imported.",
+  slimStringContainsSecrets: "This slim string contains account secrets. Keep it private.",
+  accountNameOptional: "Account Name (optional)",
+  openFollowingLoginLink: "Please open the following link in your browser to proceed:",
+  oauthSameHost: "OAuth login must finish on the same host machine because the callback redirects to `localhost`.",
+  generateLoginLinkHelp: "Click the button below to generate a login link. You will need to open it in your browser to authenticate.",
+  browse: "Browse...",
+  importAuthJsonHelp: "Import credentials from an existing Codex auth.json file",
+  import: "Import",
+  fetchingUsage: "Fetching usage...",
+  noRateLimitData: "No rate limit data",
+  fiveHourLimit: "5h Limit",
+  windowLimit: "{window} limit",
+  percentLeft: "{count}% left",
+  credits: "Credits: {count}",
+  secondsAgo: "{count}s ago",
+  minutesAgo: "{count}m ago",
+  hoursAgo: "{count}h ago",
+  expiredOn: "Expired {date}",
+  untilDate: "Until {date}",
+  dailyActivityUnavailable: "Daily activity unavailable",
+  thirtyDaysShort: "30d",
+  threeMonthsShort: "3 mo",
+  sixMonthsShort: "6 mo",
+  moreUsageDetails: "More usage details",
+  activityInsights: "Activity insights",
+  mostUsedPlugins: "Most used plugins",
+  runs: "{count} runs",
+  updatedAgo: "updated {date}",
+  last7DaysTitle: "Last 7 days",
+  availableResets: "Available resets",
+  oneReset: "1 reset",
+  multipleResets: "{count} resets",
+  noExpiryLower: "no expiry",
+  expiryUnavailableLower: "expiry unavailable",
+  closestExpiry: "closest {date}",
+  clickForExpiryDetails: "Click for expiry details",
+  resetOrdinal: "Reset {count}",
+  timesShownLocal: "Times shown in your local time",
+  update: "Update",
+  updateReady: "Update ready. Restart to apply.",
+  restart: "Restart",
+  updateInstallFailed: "Update failed: {message}",
+  dismiss: "Dismiss",
 } as const;
 
 export type TranslationKey = keyof typeof englishTranslations;
@@ -354,6 +449,45 @@ const chineseTranslations: Record<TranslationKey, string> = {
   waiting: "等待 {message}", waitingReset: "等待重置", iconAndSession: "图标 + 会话", pleaseSelectAuthFile: "请选择 auth.json 文件", unknown: "未知",
   autoOn: "自动：开", autoOff: "自动：关", timedOff: "定时：关", timedAt: "定时：{message}", last30Days: "最近 30 天",
   last3Months: "最近 3 个月", last6Months: "最近 6 个月", last7DaysLabel: "最近 7 天",
+  requestFailedWithStatus: "请求失败，状态码 {status}", codexProcessesRunning: "{count} 个 Codex 正在运行",
+  switchFailed: "切换失败：{message}", couldNotSavePreference: "无法保存偏好设置：{message}",
+  couldNotSaveClosePreference: "无法保存关闭偏好设置：{message}", closeFailed: "关闭失败：{message}",
+  switchedAccountAfterClosing: "关闭 Codex 后已切换账户（{mode}）。",
+  codexClosedAccountSwitchedReopenFailed: "Codex 已关闭且账户已切换，但重新打开失败：{message}",
+  codexClosedReopenFailed: "Codex 已关闭，但重新打开失败：{message}",
+  switchFailedAfterClosing: "关闭 Codex 后切换失败：{message}", warmupSentFor: "已向 {name} 发送预热请求",
+  warmupFailedFor: "{name} 预热失败：{message}", warmupSentForAll: "已向全部 {count} 个账户发送预热请求",
+  warmupPartialFailure: "已预热 {warmed}/{count}，失败：{failed}", warmupAllFailed: "全部预热失败：{message}",
+  autoWarmupSentFor: "已向 {name} 发送 {mode} 自动预热请求", autoWarmupFailedFor: "{name} 自动预热失败：{message}",
+  timedWarmupSent: "已向 {count} 个账户发送定时预热请求", timedWarmupPartialFailure: "定时预热：{warmed} 个成功，{failed} 个失败",
+  slimTextExported: "已导出精简文本（{count} 个账户）。", importSummary: "已导入 {imported} 个，跳过 {skipped} 个（共 {total} 个）",
+  openCodexFailed: "打开 Codex 失败：{message}", noTimesAdded: "尚未添加时间。", removeTime: "移除 {time}", add: "添加",
+  noAccountsYet: "尚无账户", addFirstAccount: "添加第一个 Codex 账户以开始使用", noMatchingAccounts: "没有匹配的账户",
+  tryDifferentAccount: "请尝试其他账户名称或邮箱地址。", activeAccount: "当前账户", otherAccountsCount: "其他账户（{count}）",
+  otherAccountsFilteredCount: "其他账户（{visible}/{total}）", sort: "排序", remainingHighestToLowest: "剩余百分比：从高到低",
+  remainingLowestToHighest: "剩余百分比：从低到高", expiryEarliestToLatest: "过期：从最早到最晚",
+  expiryLatestToEarliest: "过期：从最晚到最早", closeRunningCodexQuestion: "关闭正在运行的 Codex 进程？",
+  closeProcessesBlockingSwitch: "这将对 {count} 个阻止账户切换的 Codex 进程执行{mode}。",
+  codexCloseSettingSummary: "Codex 将{mode}。可在设置中更改。", forceCloseAction: "强制关闭", forceClosedAction: "被强制关闭",
+  gracefulCloseAction: "正常关闭", forceCloseCodex: "强制关闭 Codex", rememberSelection: "记住此选择",
+  afterClosingSwitchTo: "关闭 Codex 后，Codex Switcher 将切换到 {name}。", reopenCodexDesktopAfterClose: "关闭后重新打开 Codex 桌面端",
+  keepSwitcherInDock: "将 Codex Switcher 保留在 Dock 中？", closedWindowDockOrMenuBar: "窗口关闭后，Codex Switcher 可保留在 Dock 中或仅驻留菜单栏。",
+  changeLaterFromTray: "稍后可随时从托盘弹窗更改。", keepInDock: "保留在 Dock 中",
+  existingAccountsKept: "现有账户将保留，仅导入缺失的账户。", slimStringContainsSecrets: "此精简字符串包含账户密钥，请妥善保管。",
+  accountNameOptional: "账户名称（可选）", openFollowingLoginLink: "请在浏览器中打开以下链接以继续：",
+  oauthSameHost: "OAuth 登录必须在同一主机完成，因为回调会重定向到 `localhost`。",
+  generateLoginLinkHelp: "点击下方按钮生成登录链接，然后在浏览器中打开并完成身份验证。", browse: "浏览…",
+  importAuthJsonHelp: "从现有 Codex auth.json 文件导入凭据", import: "导入", fetchingUsage: "正在获取用量…",
+  noRateLimitData: "暂无速率限制数据", fiveHourLimit: "5 小时限制", percentLeft: "剩余 {count}%", credits: "额度：{count}",
+  windowLimit: "{window} 限制",
+  secondsAgo: "{count} 秒前", minutesAgo: "{count} 分钟前", hoursAgo: "{count} 小时前", expiredOn: "已于 {date} 过期",
+  untilDate: "有效至 {date}", dailyActivityUnavailable: "每日活动不可用", thirtyDaysShort: "30 天", threeMonthsShort: "3 个月",
+  sixMonthsShort: "6 个月", moreUsageDetails: "更多用量详情", activityInsights: "活动洞察", mostUsedPlugins: "最常用插件",
+  runs: "运行 {count} 次", updatedAgo: "更新于 {date}", last7DaysTitle: "最近 7 天", availableResets: "可用重置",
+  oneReset: "1 次重置", multipleResets: "{count} 次重置", noExpiryLower: "无过期时间", expiryUnavailableLower: "过期时间不可用",
+  closestExpiry: "最近到期 {date}", clickForExpiryDetails: "点击查看过期详情", resetOrdinal: "重置 {count}",
+  timesShownLocal: "时间均按本地时区显示", update: "更新", updateReady: "更新已就绪，重启后应用。", restart: "重启",
+  updateInstallFailed: "更新失败：{message}", dismiss: "关闭",
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
@@ -371,7 +505,7 @@ function readStoredLanguage(): Language {
 
 function interpolate(text: string, params?: TranslationParams): string {
   if (!params) return text;
-  return text.replace(/\{(name|count|message|reset|warmed|failed|date)\}/g, (_, key: string) => String(params[key] ?? `{${key}}`));
+  return text.replace(/\{([A-Za-z][A-Za-z0-9]*)\}/g, (_, key: string) => String(params[key] ?? `{${key}}`));
 }
 
 export function LanguageProvider(props: { children: ReactNode }): ReactElement {
@@ -407,6 +541,11 @@ export function LanguageProvider(props: { children: ReactNode }): ReactElement {
     const text = translations[language][key] ?? translations.en[key] ?? String(key);
     return interpolate(text, params);
   }, [language]);
+
+  useEffect(() => {
+    setPlatformTranslate(t);
+    return () => setPlatformTranslate(null);
+  }, [t]);
 
   const value = useMemo(() => ({ language, setLanguage, t }), [language, setLanguage, t]);
   return createElement(LanguageContext.Provider, { value }, props.children) as ReactElement;
