@@ -91,6 +91,8 @@ test('keeps the visible React copy inventory in the translation dictionary', () 
     'usageStatsUnavailable',
     'disableAutoWarmupForAllAccounts', 'enableAutoWarmupForAllAccounts', 'refreshUsage',
     'waiting', 'waitingReset', 'iconAndSession', 'pleaseSelectAuthFile', 'unknown',
+    'autoOn', 'autoOff', 'timedOff', 'timedAt', 'last30Days', 'last3Months', 'last6Months',
+    'last7DaysLabel',
   ];
   const englishBody = source.match(/const englishTranslations = \{([\s\S]*?)\} as const;/)?.[1] ?? '';
   const missing = requiredKeys.filter((key) => !new RegExp(`\\b${key}:`).test(englishBody));

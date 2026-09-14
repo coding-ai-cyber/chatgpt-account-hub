@@ -272,6 +272,14 @@ const englishTranslations = {
   iconAndSession: "Icon + Session",
   pleaseSelectAuthFile: "Please select an auth.json file",
   unknown: "Unknown",
+  autoOn: "Auto: on",
+  autoOff: "Auto: off",
+  timedOff: "Timed: off",
+  timedAt: "Timed: {message}",
+  last30Days: "Last 30 days",
+  last3Months: "Last 3 months",
+  last6Months: "Last 6 months",
+  last7DaysLabel: "Last 7 days",
 } as const;
 
 export type TranslationKey = keyof typeof englishTranslations;
@@ -344,6 +352,8 @@ const chineseTranslations: Record<TranslationKey, string> = {
   enableAutoWarmupForThisAccount: "为此账户启用自动预热", usageStatsChatGPTOnly: "只有 ChatGPT 账户提供用量统计。", usageStatsUnavailable: "用量统计不可用。",
   disableAutoWarmupForAllAccounts: "停用所有账户的自动预热", enableAutoWarmupForAllAccounts: "启用所有账户的自动预热", refreshUsage: "刷新用量",
   waiting: "等待 {message}", waitingReset: "等待重置", iconAndSession: "图标 + 会话", pleaseSelectAuthFile: "请选择 auth.json 文件", unknown: "未知",
+  autoOn: "自动：开", autoOff: "自动：关", timedOff: "定时：关", timedAt: "定时：{message}", last30Days: "最近 30 天",
+  last3Months: "最近 3 个月", last6Months: "最近 6 个月", last7DaysLabel: "最近 7 天",
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
