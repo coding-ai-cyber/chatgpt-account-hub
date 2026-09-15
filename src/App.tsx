@@ -66,7 +66,7 @@ type AutoWarmupLedger = Record<
     lastAutoWindowKind?: AutoWarmupWindowKind;
   }
 >;
-const appWindow = getCurrentWindow();
+const appWindow = isTauriRuntime() ? getCurrentWindow() : null;
 const isMacOs =
   typeof navigator !== "undefined" &&
   /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent);
@@ -389,14 +389,14 @@ function App() {
 
   const handleTitlebarDrag = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!isTauriRuntime() || event.button !== 0) return;
+      if (!isTauriRuntime() || !appWindow || event.button !== 0) return;
       void appWindow.startDragging();
     },
     []
   );
 
   const handleTitlebarDoubleClick = useCallback(() => {
-    if (!isTauriRuntime()) return;
+    if (!isTauriRuntime() || !appWindow) return;
     void appWindow.toggleMaximize();
   }, []);
 
@@ -522,7 +522,7 @@ function App() {
   }, [themeMode]);
 
   useEffect(() => {
-    if (!isTauriRuntime() || isMacOs) return;
+    if (!isTauriRuntime() || !appWindow || isMacOs) return;
 
     let unlisten: (() => void) | undefined;
 
@@ -1378,7 +1378,7 @@ function App() {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => {
-                  void appWindow.minimize();
+                  void appWindow?.minimize();
                 }}
                 className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                 title={t("minimize")}
@@ -1389,7 +1389,7 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  void appWindow.toggleMaximize();
+                  void appWindow?.toggleMaximize();
                 }}
                 className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                 title={isWindowMaximized ? t("restore") : t("maximize")}
@@ -1407,7 +1407,7 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  void appWindow.close();
+                  void appWindow?.close();
                 }}
                 className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-500 hover:text-white dark:text-gray-400 dark:hover:bg-red-500 dark:hover:text-white"
                 title={t("close")}
