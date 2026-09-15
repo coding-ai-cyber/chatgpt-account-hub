@@ -654,6 +654,7 @@ function App() {
     checkProcesses,
     showToast: showWarmupToast,
     formatError: formatWarmupError,
+    t,
   });
   const isForceClosingCodex = isKillingCodex || isCompletingForceClose;
   const desktopReopen = useDesktopReopen(forceCloseConfirmOpen);

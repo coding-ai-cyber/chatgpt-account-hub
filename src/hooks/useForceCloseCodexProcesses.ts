@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import type { CodexProcessInfo } from "../types";
 import { invokeBackend } from "../lib/platform";
+import type { Translate } from "../lib/i18n";
+import { getForceCloseMessage } from "../lib/forceCloseMessages";
 
 interface KillCodexProcessesResult {
   targeted_count: number;
@@ -14,6 +16,7 @@ interface UseForceCloseCodexProcessesOptions {
   checkProcesses: () => Promise<CodexProcessInfo | null>;
   showToast: (message: string, isError?: boolean) => void;
   formatError: (err: unknown) => string;
+  t: Translate;
 }
 
 export function useForceCloseCodexProcesses({
@@ -21,6 +24,7 @@ export function useForceCloseCodexProcesses({
   checkProcesses,
   showToast,
   formatError,
+  t,
 }: UseForceCloseCodexProcessesOptions) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isForceClosing, setIsForceClosing] = useState(false);
@@ -37,40 +41,38 @@ export function useForceCloseCodexProcesses({
       const remainingCount = latestProcessInfo?.count ?? processCount;
       const closedCount = Math.max(0, processCount - remainingCount);
 
-      if (!latestProcessInfo) {
-        showToast("Could not verify that Codex closed. Account switching and reopening were skipped.", true);
-      } else if (result.targeted_count === 0) {
-        showToast("No running Codex processes found.");
-      } else if (remainingCount === 0) {
-        showToast(
-          `${forceClose ? "Force closed" : "Closed"} ${processCount} Codex session${
-            processCount === 1 ? "" : "s"
-          }.`
-        );
-      } else if (closedCount > 0) {
-        showToast(
-          `${forceClose ? "Force closed" : "Closed"} ${closedCount}/${processCount} Codex sessions. ${remainingCount} still running.`,
-          true
-        );
-      } else {
-        showToast(
-          `Could not ${forceClose ? "force close" : "gracefully close"} ${remainingCount} Codex session${
-            remainingCount === 1 ? "" : "s"
-          }.`,
-          true
-        );
-      }
+      const message = !latestProcessInfo
+        ? getForceCloseMessage({ kind: "verification-failed" })
+        : result.targeted_count === 0
+          ? getForceCloseMessage({ kind: "no-processes" })
+          : remainingCount === 0
+            ? getForceCloseMessage({ kind: "closed", count: processCount, forceClose })
+            : closedCount > 0
+              ? getForceCloseMessage({
+                  kind: "partial",
+                  closed: closedCount,
+                  total: processCount,
+                  remaining: remainingCount,
+                  forceClose,
+                })
+              : getForceCloseMessage({ kind: "still-running", remaining: remainingCount, forceClose });
+
+      showToast(t(message.key, message.params), message.isError);
 
       return { processInfo: latestProcessInfo, reopenToken: result.reopen_token ?? null };
     } catch (err) {
       console.error("Failed to close Codex processes:", err);
-      showToast(`Close failed: ${formatError(err)}`, true);
+      const message = getForceCloseMessage({
+        kind: "request-failed",
+        message: formatError(err),
+      });
+      showToast(t(message.key, message.params), message.isError);
       return null;
     } finally {
       setConfirmOpen(false);
       setIsForceClosing(false);
     }
-  }, [checkProcesses, formatError, processCount, showToast]);
+  }, [checkProcesses, formatError, processCount, showToast, t]);
 
   return {
     forceCloseConfirmOpen: confirmOpen,
