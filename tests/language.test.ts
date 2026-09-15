@@ -263,6 +263,20 @@ test('persists a normalized backend language after loading it', () => {
   );
 });
 
+test('loads the persisted backend language in web mode during provider initialization', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/lib/i18n.tsx', import.meta.url)),
+    'utf8',
+  );
+  const providerSource = source.slice(source.indexOf('export function LanguageProvider'));
+
+  assert.match(
+    providerSource,
+    /useEffect\(\(\) => \{[\s\S]*?void loadBackendLanguage\(\);[\s\S]*?if \(isTauriRuntime\(\)\)/,
+  );
+  assert.doesNotMatch(providerSource, /if \(!isTauriRuntime\(\)\) return;/);
+});
+
 test('mounts language providers and saves language selection from settings', () => {
   const root = fileURLToPath(new URL('..', import.meta.url));
   const mainSource = readFileSync(`${root}/src/main.tsx`, 'utf8');
@@ -291,6 +305,22 @@ test('keeps language and display setting errors independent', () => {
   assert.match(source, /catch \(err\) \{\s*setLanguageError\(String\(err\)\);/);
   assert.match(source, /displayError && <p[\s\S]*?t\("couldNotUpdateDisplaySettings", \{ message: displayError \}\)/);
   assert.match(source, /languageError && <p[\s\S]*?t\("failedToSave", \{ message: languageError \}\)/);
+});
+
+test('shows language save errors outside the desktop-only settings block', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/components/SettingsModal.tsx', import.meta.url)),
+    'utf8',
+  );
+  const desktopBlockStart = source.indexOf('{desktop && (');
+  const desktopBlockEnd = source.indexOf('          )}', desktopBlockStart);
+  const languageError = source.indexOf('{languageError &&');
+  const languageLabel = source.indexOf('<label htmlFor="language"');
+
+  assert.ok(desktopBlockStart >= 0);
+  assert.ok(desktopBlockEnd > desktopBlockStart);
+  assert.ok(languageError > languageLabel);
+  assert.ok(languageError > desktopBlockEnd);
 });
 
 test('interpolates arbitrary named translation parameters', () => {

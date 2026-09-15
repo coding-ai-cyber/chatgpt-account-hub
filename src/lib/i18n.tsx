@@ -538,15 +538,16 @@ export function LanguageProvider(props: { children: ReactNode }): ReactElement {
   }, []);
 
   useEffect(() => {
-    if (!isTauriRuntime()) return;
-    let unlisten: (() => void) | undefined;
-    let disposed = false;
-    void import("@tauri-apps/api/event").then(async ({ listen }) => {
-      if (disposed) return;
-      unlisten = await listen("app-settings-changed", () => { void loadBackendLanguage(); });
-      void loadBackendLanguage();
-    }).catch(() => { /* browser/web mode or unavailable event bridge */ });
-    return () => { disposed = true; unlisten?.(); };
+    void loadBackendLanguage();
+    if (isTauriRuntime()) {
+      let unlisten: (() => void) | undefined;
+      let disposed = false;
+      void import("@tauri-apps/api/event").then(async ({ listen }) => {
+        if (disposed) return;
+        unlisten = await listen("app-settings-changed", () => { void loadBackendLanguage(); });
+      }).catch(() => { /* browser/web mode or unavailable event bridge */ });
+      return () => { disposed = true; unlisten?.(); };
+    }
   }, [loadBackendLanguage]);
 
   const setLanguage = useCallback(async (nextLanguage: Language) => {

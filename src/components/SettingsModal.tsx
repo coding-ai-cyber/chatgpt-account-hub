@@ -143,7 +143,6 @@ export function SettingsModal({
                 </>
               ) : !displayError && <p className="text-sm text-gray-500 dark:text-gray-400">{t("loadingDisplaySettings")}</p>}
               {displayError && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{t("couldNotUpdateDisplaySettings", { message: displayError })}</p>}
-              {languageError && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{t("failedToSave", { message: languageError })}</p>}
               <div className="border-t border-gray-100 dark:border-gray-800" />
             </>
           )}
@@ -158,6 +157,7 @@ export function SettingsModal({
             <option value="zh-CN">{t("chinese")}</option>
             <option value="en">{t("english")}</option>
           </select>
+          {languageError && <p role="alert" className="text-sm text-red-600 dark:text-red-300">{t("failedToSave", { message: languageError })}</p>}
           <label htmlFor="codex-close-preference" className="block text-sm font-medium text-gray-900 dark:text-gray-100">
             {t("closeCodex")}
           </label>
