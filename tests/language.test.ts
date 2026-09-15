@@ -277,6 +277,27 @@ test('loads the persisted backend language in web mode during provider initializ
   assert.doesNotMatch(providerSource, /if \(!isTauriRuntime\(\)\) return;/);
 });
 
+test('does not let a stale backend language load overwrite a newer selection', () => {
+  const source = readFileSync(
+    fileURLToPath(new URL('../src/lib/i18n.tsx', import.meta.url)),
+    'utf8',
+  );
+  const loadSource = source.slice(
+    source.indexOf('const loadBackendLanguage'),
+    source.indexOf('const setLanguage ='),
+  );
+  const saveSource = source.slice(
+    source.indexOf('const setLanguage ='),
+    source.indexOf('const t ='),
+  );
+
+  assert.match(source, /const languageRequestId = useRef\(0\);/);
+  assert.match(loadSource, /const requestId = \+\+languageRequestId\.current;/);
+  assert.match(loadSource, /if \(requestId !== languageRequestId\.current\) return;/);
+  assert.match(saveSource, /const requestId = \+\+languageRequestId\.current;/);
+  assert.match(saveSource, /await invokeBackend\("set_language", \{ language: nextLanguage \}\);[\s\S]*?if \(requestId !== languageRequestId\.current\) return;/);
+});
+
 test('mounts language providers and saves language selection from settings', () => {
   const root = fileURLToPath(new URL('..', import.meta.url));
   const mainSource = readFileSync(`${root}/src/main.tsx`, 'utf8');

@@ -13,3 +13,4 @@ Task 5: verified with external signing blocker (release EXE/MSI/NSIS produced an
 Task 6: complete as evidence record (report corrected and independently reviewed; Chinese UI/add-account PASS, remaining manual cases NOT RUN/BLOCKED)
 Task 7: complete (conservative cleanup reviewed; no diagnostic files deleted; existing changes and WebView2 backup preserved)
 Task 8: complete (web/Tauri language initialization and web save-error visibility fixed; 12 focused language tests, 30 frontend tests, and build clean)
+Task 9: complete (stale language load/save protection added; 13 focused language tests, 31 frontend tests, and build clean)

@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
   type ReactElement,
@@ -528,10 +529,13 @@ function interpolate(text: string, params?: TranslationParams): string {
 
 export function LanguageProvider(props: { children: ReactNode }): ReactElement {
   const [language, setLanguageState] = useState<Language>(readStoredLanguage);
+  const languageRequestId = useRef(0);
 
   const loadBackendLanguage = useCallback(async () => {
+    const requestId = ++languageRequestId.current;
     try {
       const nextLanguage = parseLanguage(await invokeBackend<string>("get_language"));
+      if (requestId !== languageRequestId.current) return;
       setLanguageState(nextLanguage);
       try { window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage); } catch { /* storage is optional */ }
     } catch { /* retain local value */ }
@@ -551,7 +555,9 @@ export function LanguageProvider(props: { children: ReactNode }): ReactElement {
   }, [loadBackendLanguage]);
 
   const setLanguage = useCallback(async (nextLanguage: Language) => {
+    const requestId = ++languageRequestId.current;
     await invokeBackend("set_language", { language: nextLanguage });
+    if (requestId !== languageRequestId.current) return;
     setLanguageState(nextLanguage);
     try { window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage); } catch { /* storage is optional */ }
   }, []);
