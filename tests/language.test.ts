@@ -292,10 +292,16 @@ test('does not let a stale backend language load overwrite a newer selection', (
   );
 
   assert.match(source, /const languageRequestId = useRef\(0\);/);
+  assert.match(source, /const languageSaveQueue = useRef\(Promise\.resolve\(\)\);/);
   assert.match(loadSource, /const requestId = \+\+languageRequestId\.current;/);
+  assert.match(loadSource, /const saveQueue = languageSaveQueue\.current;/);
+  assert.match(loadSource, /await saveQueue;/);
   assert.match(loadSource, /if \(requestId !== languageRequestId\.current\) return;/);
   assert.match(saveSource, /const requestId = \+\+languageRequestId\.current;/);
+  assert.match(saveSource, /const save = languageSaveQueue\.current\.then\(/);
   assert.match(saveSource, /await invokeBackend\("set_language", \{ language: nextLanguage \}\);[\s\S]*?if \(requestId !== languageRequestId\.current\) return;/);
+  assert.match(saveSource, /languageSaveQueue\.current = save\.catch\(\(\) => \{\}\);/);
+  assert.match(saveSource, /return save;/);
 });
 
 test('mounts language providers and saves language selection from settings', () => {

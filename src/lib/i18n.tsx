@@ -530,10 +530,13 @@ function interpolate(text: string, params?: TranslationParams): string {
 export function LanguageProvider(props: { children: ReactNode }): ReactElement {
   const [language, setLanguageState] = useState<Language>(readStoredLanguage);
   const languageRequestId = useRef(0);
+  const languageSaveQueue = useRef(Promise.resolve());
 
   const loadBackendLanguage = useCallback(async () => {
     const requestId = ++languageRequestId.current;
+    const saveQueue = languageSaveQueue.current;
     try {
+      await saveQueue;
       const nextLanguage = parseLanguage(await invokeBackend<string>("get_language"));
       if (requestId !== languageRequestId.current) return;
       setLanguageState(nextLanguage);
@@ -556,10 +559,14 @@ export function LanguageProvider(props: { children: ReactNode }): ReactElement {
 
   const setLanguage = useCallback(async (nextLanguage: Language) => {
     const requestId = ++languageRequestId.current;
-    await invokeBackend("set_language", { language: nextLanguage });
-    if (requestId !== languageRequestId.current) return;
-    setLanguageState(nextLanguage);
-    try { window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage); } catch { /* storage is optional */ }
+    const save = languageSaveQueue.current.then(async () => {
+      await invokeBackend("set_language", { language: nextLanguage });
+      if (requestId !== languageRequestId.current) return;
+      setLanguageState(nextLanguage);
+      try { window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage); } catch { /* storage is optional */ }
+    });
+    languageSaveQueue.current = save.catch(() => {});
+    return save;
   }, []);
 
   const t = useCallback<Translate>((key, params) => {
