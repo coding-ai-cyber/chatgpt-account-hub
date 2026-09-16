@@ -59,13 +59,13 @@ export function TopToolbar({
         )}
         <div className="app-toolbar-title min-w-0">
           <h1 className="truncate text-base font-semibold app-text-primary">{title}</h1>
-          <p className="truncate text-xs app-text-muted">{description}</p>
+          <p className="app-toolbar-description truncate text-xs app-text-muted">{description}</p>
         </div>
       </div>
 
       <div className="app-toolbar-actions">
         <span
-          className={`app-chip ${hasRunningProcesses ? "app-chip-warning" : "app-chip-success"}`}
+          className={`app-toolbar-status app-chip ${hasRunningProcesses ? "app-chip-warning" : "app-chip-success"}`}
           title={
             hasRunningProcesses
               ? t("codexProcessesRunning", { count: processInfo?.count ?? 0 })
@@ -73,7 +73,7 @@ export function TopToolbar({
           }
         >
           <span className="app-qr-status-dot" style={{ background: hasRunningProcesses ? "var(--warning)" : "var(--success)" }} />
-          <span>
+          <span className="app-toolbar-status-label">
             {hasRunningProcesses
               ? t("codexProcessesRunning", { count: processInfo?.count ?? 0 })
               : t("codexProcessesRunning", { count: 0 })}
@@ -82,6 +82,7 @@ export function TopToolbar({
 
         <button
           type="button"
+          data-toolbar-action="mask"
           className="app-icon-button"
           onClick={onToggleMaskAll}
           aria-label={allMasked ? t("showAllAccountNamesAndEmails") : t("hideAllAccountNamesAndEmails")}
@@ -91,6 +92,7 @@ export function TopToolbar({
         </button>
         <button
           type="button"
+          data-toolbar-action="refresh"
           className="app-icon-button"
           onClick={onRefresh}
           disabled={refreshing}
@@ -101,6 +103,7 @@ export function TopToolbar({
         </button>
         <button
           type="button"
+          data-toolbar-action="warmup"
           className="app-icon-button app-btn-soft-warning"
           onClick={onWarmupAll}
           disabled={warmingAll || accountsCount === 0}
@@ -111,6 +114,7 @@ export function TopToolbar({
         </button>
         <button
           type="button"
+          data-toolbar-action="add"
           className="app-icon-button app-btn-primary"
           onClick={onAddAccount}
           aria-label={t("addAccount")}

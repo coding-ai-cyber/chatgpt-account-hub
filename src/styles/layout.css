@@ -181,10 +181,11 @@
 
 .app-toolbar-actions {
   display: flex;
+  min-width: 0;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 0.45rem;
+  flex-wrap: nowrap;
 }
 
 .app-content {
@@ -441,6 +442,23 @@
 }
 
 @media (max-width: 900px) {
+  .app-toolbar {
+    gap: 0.65rem;
+    padding-inline: 0.9rem;
+  }
+
+  .app-toolbar-status-label {
+    display: none;
+  }
+
+  .app-toolbar-status {
+    width: 2rem;
+    min-width: 2rem;
+    height: 2.5rem;
+    justify-content: center;
+    padding-inline: 0;
+  }
+
   .current-account-hero-header {
     flex-wrap: wrap;
   }
@@ -452,6 +470,16 @@
 
   .current-account-hero-body {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-toolbar-description {
+    display: none;
+  }
+
+  .app-toolbar-title h1 {
+    max-width: 9rem;
   }
 }
 

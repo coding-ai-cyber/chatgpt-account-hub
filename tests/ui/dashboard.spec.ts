@@ -21,6 +21,16 @@ test("888px viewport uses a compact sidebar without horizontal overflow", async 
   expect(overflow).toEqual({ document: 0, sidebar: 0, main: 0 });
 });
 
+test("toolbar keeps one primary action and never wraps at 888px", async ({ page }) => {
+  await page.setViewportSize({ width: 888, height: 693 });
+  await page.goto("/tests/ui/preview.html");
+  await expect(page.locator(".app-toolbar .app-btn-primary")).toHaveCount(1);
+  const rows = await page.locator(".app-toolbar-actions > *").evaluateAll((items) =>
+    new Set(items.map((item) => Math.round(item.getBoundingClientRect().top))).size,
+  );
+  expect(rows).toBe(1);
+});
+
 test("600px viewport keeps navigation in a labeled drawer", async ({ page }) => {
   await page.setViewportSize({ width: 600, height: 500 });
   await page.goto("/tests/ui/preview.html");

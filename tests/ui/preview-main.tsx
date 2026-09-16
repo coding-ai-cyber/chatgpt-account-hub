@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { AppShell } from "../../src/app/AppShell";
 import { CurrentAccountDashboard } from "../../src/components/dashboard/CurrentAccountDashboard";
+import { TopToolbar } from "../../src/components/layout/TopToolbar";
 import { LanguageProvider } from "../../src/lib/i18n";
 import { fixtureAccount, fixtureStats } from "./fixtures";
 import "../../src/App.css";
@@ -18,7 +19,22 @@ function Preview() {
       onToggleCollapsed={() => setCollapsed((value) => !value)}
       onNavigate={() => {}}
       activeAccount={fixtureAccount}
-      toolbar={<div className="app-toolbar app-toolbar-bg"><strong>当前账户</strong></div>}
+      toolbar={
+        <TopToolbar
+          title="当前账户"
+          description="当前账户与额度概览"
+          processInfo={{ count: 1, background_count: 0, can_switch: false, pids: [1] }}
+          allMasked={false}
+          refreshing={false}
+          warmingAll={false}
+          accountsCount={1}
+          onToggleMaskAll={() => {}}
+          onRefresh={() => {}}
+          onWarmupAll={() => {}}
+          onAddAccount={() => {}}
+          actions={[{ label: "检查更新", icon: "download", onSelect: () => {} }]}
+        />
+      }
     >
       <div className="app-content-inner">
         <CurrentAccountDashboard
