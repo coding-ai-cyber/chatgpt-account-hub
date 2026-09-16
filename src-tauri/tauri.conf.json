@@ -36,6 +36,9 @@
     ],
     "createUpdaterArtifacts": true,
     "windows": {
+      "wix": {
+        "language": "zh-CN"
+      },
       "webviewInstallMode": {
         "type": "offlineInstaller",
         "silent": true
