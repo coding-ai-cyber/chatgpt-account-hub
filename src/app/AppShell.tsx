@@ -1,9 +1,9 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauriRuntime } from "../lib/platform";
 import type { AccountWithUsage } from "../types";
 import type { PageId } from "./navigation";
-import { Sidebar } from "../components/layout/Sidebar";
+import { Sidebar, SIDEBAR_NAVIGATION_ID } from "../components/layout/Sidebar";
 import { Icon } from "../components/layout/Icon";
 import { useLanguage } from "../lib/i18n";
 import { useSidebarMode } from "./sidebarState";
@@ -36,12 +36,44 @@ export function AppShell({
   const { t } = useLanguage();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const navigationTriggerRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const restoreDrawerFocusRef = useRef(false);
   const sidebarMode = useSidebarMode(collapsed);
   const usesDrawer = sidebarMode === "drawer";
+  const drawerHidden = usesDrawer && !drawerOpen;
 
   useEffect(() => {
     if (!usesDrawer) setDrawerOpen(false);
   }, [usesDrawer]);
+
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
+    sidebar.inert = drawerHidden;
+    if (usesDrawer && drawerOpen) {
+      sidebar.querySelector<HTMLElement>(".app-sidebar-nav button")?.focus();
+      return;
+    }
+
+    if (usesDrawer && restoreDrawerFocusRef.current) {
+      restoreDrawerFocusRef.current = false;
+      navigationTriggerRef.current?.focus();
+    }
+  }, [drawerHidden, drawerOpen, usesDrawer]);
+
+  useEffect(() => {
+    if (!usesDrawer || !drawerOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      restoreDrawerFocusRef.current = true;
+      setDrawerOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [drawerOpen, usesDrawer]);
 
   const handleTitlebarDrag = (event: React.MouseEvent) => {
     if (!isTauriRuntime() || !appWindow || event.button !== 0) return;
@@ -67,13 +99,19 @@ export function AppShell({
     <div className={`app-shell app-bg ${drawerOpen ? "is-drawer-open" : ""}`}>
       <header className="app-titlebar">
         <div className="flex items-center gap-1" style={isMacOs ? { paddingLeft: "4.5rem" } : undefined}>
-          {!isMacOs && usesDrawer && (
+          {usesDrawer && (
             <button
+              ref={navigationTriggerRef}
               type="button"
               data-testid="navigation-trigger"
               className="app-titlebar-action"
-              onClick={() => setDrawerOpen(true)}
+              onClick={() => {
+                restoreDrawerFocusRef.current = false;
+                setDrawerOpen(true);
+              }}
               aria-label={t("openNavigation")}
+              aria-controls={SIDEBAR_NAVIGATION_ID}
+              aria-expanded={drawerOpen}
             >
               <Icon name="menu" size={16} />
             </button>
@@ -122,7 +160,9 @@ export function AppShell({
 
       <div className="relative flex min-h-0 flex-1">
         <Sidebar
+          elementRef={sidebarRef}
           mode={sidebarMode}
+          hiddenFromAssistiveTechnology={drawerHidden}
           activePage={activePage}
           activeAccount={activeAccount}
           masked={masked}
@@ -133,7 +173,10 @@ export function AppShell({
           <button
             type="button"
             className="app-drawer-scrim"
-            onClick={() => setDrawerOpen(false)}
+            onClick={() => {
+              restoreDrawerFocusRef.current = true;
+              setDrawerOpen(false);
+            }}
             aria-label={t("closeNavigation")}
           />
         )}

@@ -1,5 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
+// Playwright enables colored child-process output, so drop the conflicting inherited flag.
+delete process.env.NO_COLOR;
+
 export default defineConfig({
   testDir: ".",
   testMatch: "dashboard.spec.ts",

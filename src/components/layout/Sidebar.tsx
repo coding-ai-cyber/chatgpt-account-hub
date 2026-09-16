@@ -2,10 +2,15 @@ import { NAV_ITEMS, type PageId } from "../../app/navigation";
 import type { SidebarMode } from "../../app/sidebarState";
 import { useLanguage } from "../../lib/i18n";
 import type { AccountWithUsage } from "../../types";
+import type { Ref } from "react";
 import { Icon } from "./Icon";
 
+export const SIDEBAR_NAVIGATION_ID = "app-sidebar-navigation";
+
 interface SidebarProps {
+  elementRef: Ref<HTMLElement>;
   mode: SidebarMode;
+  hiddenFromAssistiveTechnology: boolean;
   activePage: PageId;
   activeAccount?: AccountWithUsage;
   masked?: boolean;
@@ -14,7 +19,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({
+  elementRef,
   mode,
+  hiddenFromAssistiveTechnology,
   activePage,
   activeAccount,
   masked = false,
@@ -29,8 +36,11 @@ export function Sidebar({
 
   return (
     <aside
+      ref={elementRef}
+      id={SIDEBAR_NAVIGATION_ID}
       className={`app-sidebar ${compact ? "is-compact" : ""}`}
       data-mode={mode}
+      aria-hidden={hiddenFromAssistiveTechnology || undefined}
       aria-label={t("navCurrentAccount")}
     >
       <div className="app-sidebar-brand">
