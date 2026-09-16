@@ -48,7 +48,7 @@ export function Sidebar({
           C
         </span>
         <div className="app-brand-text min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold app-text-primary">Codex Switcher</div>
+          <div className="truncate text-sm font-semibold app-text-primary">ChatGPT 账号管家</div>
           <div className="hidden text-[11px] app-text-muted sm:block">
             {t("navCurrentAccountDescription")}
           </div>

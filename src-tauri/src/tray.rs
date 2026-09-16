@@ -67,7 +67,7 @@ pub fn setup(app: &AppHandle) -> tauri::Result<()> {
 
     let builder = TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon)
-        .tooltip("Codex Switcher")
+        .tooltip("ChatGPT 账号管家")
         .menu(&menu)
         .on_menu_event(handle_menu_event);
 
@@ -237,7 +237,7 @@ fn create_tray_window<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     }
 
     let window = WebviewWindowBuilder::new(app, TRAY_WINDOW, WebviewUrl::App("tray.html".into()))
-        .title("Codex Switcher")
+        .title("ChatGPT 账号管家")
         .inner_size(TRAY_WIDTH, TRAY_HEIGHT)
         .resizable(false)
         .decorations(false)

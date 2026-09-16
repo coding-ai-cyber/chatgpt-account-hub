@@ -40,3 +40,55 @@ test("project consumers do not retain the original repository URL", () => {
     true,
   );
 });
+
+test("visible surfaces use the ChatGPT account hub brand", () => {
+  const root = resolve(import.meta.dirname, "..");
+  const visibleSurfaces = [
+    ["src/lib/i18n.tsx", ["ChatGPT 账号管家", "ChatGPT Account Hub"]],
+    ["src/components/layout/Sidebar.tsx", ["ChatGPT 账号管家"]],
+    ["src/TrayMenu.tsx", ["ChatGPT 账号管家"]],
+    ["src-tauri/tauri.conf.json", ["ChatGPT 账号管家"]],
+    ["src-tauri/tauri.windows.conf.json", ["ChatGPT 账号管家"]],
+    ["src-tauri/tauri.macos.conf.json", ["ChatGPT 账号管家"]],
+    ["src-tauri/tauri.linux.conf.json", ["ChatGPT 账号管家"]],
+    ["src-tauri/src/tray.rs", ["ChatGPT 账号管家"]],
+    ["src-tauri/src/i18n.rs", ["ChatGPT 账号管家", "ChatGPT Account Hub"]],
+    ["src-tauri/src/web.rs", ["ChatGPT Account Hub"]],
+    ["src-tauri/src/auth/oauth_server.rs", ["ChatGPT Account Hub"]],
+    ["public/themes/illustrated.svg", ["ChatGPT Account Hub"]],
+    ["README.md", ["ChatGPT 账号管家", "ChatGPT Account Hub"]],
+    ["package.json", ["ChatGPT Account Hub"]],
+  ] as const;
+
+  for (const [file, expectedNames] of visibleSurfaces) {
+    const source = readFileSync(resolve(root, file), "utf8");
+    assert.equal(
+      source.includes("Codex Switcher"),
+      false,
+      `${file} retains the stale visible product name`,
+    );
+
+    for (const expectedName of expectedNames) {
+      assert.equal(
+        source.includes(expectedName),
+        true,
+        `${file} is missing ${expectedName}`,
+      );
+    }
+  }
+
+  const processSource = readFileSync(
+    resolve(root, "src-tauri/src/commands/process.rs"),
+    "utf8",
+  );
+  assert.equal(
+    processSource.includes("Codex Switcher needs permission"),
+    false,
+    "the macOS elevation prompt retains the stale visible product name",
+  );
+  assert.equal(
+    processSource.includes("ChatGPT Account Hub needs permission"),
+    true,
+    "the macOS elevation prompt is missing the English product name",
+  );
+});
