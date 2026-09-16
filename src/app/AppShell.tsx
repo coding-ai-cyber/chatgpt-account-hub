@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauriRuntime } from "../lib/platform";
 import type { AccountWithUsage } from "../types";
@@ -6,6 +6,7 @@ import type { PageId } from "./navigation";
 import { Sidebar } from "../components/layout/Sidebar";
 import { Icon } from "../components/layout/Icon";
 import { useLanguage } from "../lib/i18n";
+import { useSidebarMode } from "./sidebarState";
 
 const appWindow = isTauriRuntime() ? getCurrentWindow() : null;
 const isMacOs =
@@ -35,6 +36,12 @@ export function AppShell({
   const { t } = useLanguage();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const sidebarMode = useSidebarMode(collapsed);
+  const usesDrawer = sidebarMode === "drawer";
+
+  useEffect(() => {
+    if (!usesDrawer) setDrawerOpen(false);
+  }, [usesDrawer]);
 
   const handleTitlebarDrag = (event: React.MouseEvent) => {
     if (!isTauriRuntime() || !appWindow || event.button !== 0) return;
@@ -60,10 +67,11 @@ export function AppShell({
     <div className={`app-shell app-bg ${drawerOpen ? "is-drawer-open" : ""}`}>
       <header className="app-titlebar">
         <div className="flex items-center gap-1" style={isMacOs ? { paddingLeft: "4.5rem" } : undefined}>
-          {!isMacOs && (
+          {!isMacOs && usesDrawer && (
             <button
               type="button"
-              className="app-titlebar-action lg:hidden"
+              data-testid="navigation-trigger"
+              className="app-titlebar-action"
               onClick={() => setDrawerOpen(true)}
               aria-label={t("openNavigation")}
             >
@@ -114,17 +122,17 @@ export function AppShell({
 
       <div className="relative flex min-h-0 flex-1">
         <Sidebar
-          collapsed={collapsed}
+          mode={sidebarMode}
           activePage={activePage}
           activeAccount={activeAccount}
           masked={masked}
           onSelectPage={handleNavigate}
           onToggleCollapsed={onToggleCollapsed}
         />
-        {drawerOpen && (
+        {usesDrawer && drawerOpen && (
           <button
             type="button"
-            className="app-drawer-scrim lg:hidden"
+            className="app-drawer-scrim"
             onClick={() => setDrawerOpen(false)}
             aria-label={t("closeNavigation")}
           />

@@ -1,10 +1,11 @@
-import { NAV_ITEMS, getNavItem, type PageId } from "../../app/navigation";
+import { NAV_ITEMS, type PageId } from "../../app/navigation";
+import type { SidebarMode } from "../../app/sidebarState";
 import { useLanguage } from "../../lib/i18n";
 import type { AccountWithUsage } from "../../types";
 import { Icon } from "./Icon";
 
 interface SidebarProps {
-  collapsed: boolean;
+  mode: SidebarMode;
   activePage: PageId;
   activeAccount?: AccountWithUsage;
   masked?: boolean;
@@ -13,7 +14,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  collapsed,
+  mode,
   activePage,
   activeAccount,
   masked = false,
@@ -21,14 +22,15 @@ export function Sidebar({
   onToggleCollapsed,
 }: SidebarProps) {
   const { t } = useLanguage();
-  const currentPage = getNavItem(activePage);
+  const compact = mode === "compact";
   const accountLabel = masked
     ? t("accountHidden")
     : activeAccount?.name || t("noAccountsConfigured");
 
   return (
     <aside
-      className={`app-sidebar ${collapsed ? "is-collapsed" : ""}`}
+      className={`app-sidebar ${compact ? "is-compact" : ""}`}
+      data-mode={mode}
       aria-label={t("navCurrentAccount")}
     >
       <div className="app-sidebar-brand">
@@ -45,15 +47,14 @@ export function Sidebar({
           type="button"
           className="app-icon-button hidden h-8 w-8 lg:inline-flex"
           onClick={onToggleCollapsed}
-          aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
-          title={collapsed ? t("expandSidebar") : t("collapseSidebar")}
+          aria-label={compact ? t("expandSidebar") : t("collapseSidebar")}
+          title={compact ? t("expandSidebar") : t("collapseSidebar")}
         >
-          <Icon name={collapsed ? "chevron-right" : "chevron-left"} size={16} />
+          <Icon name={compact ? "chevron-right" : "chevron-left"} size={16} />
         </button>
       </div>
 
       <nav className="app-sidebar-nav" aria-label={t("navCurrentAccount")}>
-        <div className="app-sidebar-caption app-nav-label">Codex Switcher</div>
         {NAV_ITEMS.map((item) => {
           const selected = item.id === activePage;
           return (
@@ -61,6 +62,7 @@ export function Sidebar({
               key={item.id}
               type="button"
               className="app-nav-item"
+              aria-label={t(item.labelKey)}
               aria-current={selected ? "page" : undefined}
               onClick={() => onSelectPage(item.id)}
               title={`${t(item.labelKey)}: ${t(item.descriptionKey)}`}
@@ -96,7 +98,7 @@ export function Sidebar({
               {accountLabel}
             </span>
             <span className="block truncate text-[11px] app-text-muted">
-              {currentPage.labelKey === "navCurrentAccount" ? t("statusActive") : t("activeAccountSummary")}
+              {t("statusActive")}
             </span>
           </span>
         </button>

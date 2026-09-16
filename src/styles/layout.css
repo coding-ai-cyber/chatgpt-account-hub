@@ -3,6 +3,7 @@
   width: 100vw;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
 }
 
 .app-titlebar {
@@ -58,6 +59,7 @@
 .app-sidebar {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
+  max-width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -66,11 +68,28 @@
   backdrop-filter: blur(var(--blur-surface));
   -webkit-backdrop-filter: blur(var(--blur-surface));
   transition: width 180ms ease, min-width 180ms ease, transform 220ms ease;
+  overflow-x: clip;
 }
 
-.app-sidebar.is-collapsed {
+.app-sidebar.is-compact {
   width: var(--sidebar-width-collapsed);
   min-width: var(--sidebar-width-collapsed);
+}
+
+.app-sidebar.is-compact .app-brand-text,
+.app-sidebar.is-compact .app-nav-label,
+.app-sidebar.is-compact .app-account-summary-text {
+  display: none;
+}
+
+.app-sidebar.is-compact .app-sidebar-brand,
+.app-sidebar.is-compact .app-nav-item,
+.app-sidebar.is-compact .app-account-summary {
+  justify-content: center;
+}
+
+.app-sidebar.is-compact .app-sidebar-footer {
+  padding-inline: 0.5rem;
 }
 
 .app-sidebar-brand {
@@ -80,6 +99,10 @@
   min-height: 3rem;
   padding: 0.6rem 0.75rem;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-sidebar-brand > .app-icon-button {
+  display: none;
 }
 
 .app-brand-mark {
@@ -143,6 +166,14 @@
   display: flex;
   flex-direction: column;
   background: transparent;
+}
+
+.app-main,
+.app-content,
+.app-content-inner,
+.current-account-hero,
+.current-account-hero > * {
+  min-inline-size: 0;
 }
 
 .app-toolbar {
@@ -245,35 +276,26 @@
   display: none;
 }
 
-@media (max-width: 1023px) {
-  .app-sidebar:not(.is-collapsed) {
-    width: var(--sidebar-width-collapsed);
-    min-width: var(--sidebar-width-collapsed);
+@media (min-width: 1024px) {
+  .app-sidebar-brand > .app-icon-button {
+    display: inline-flex;
   }
 
-  .app-sidebar.is-collapsed .app-brand-mark {
-    margin: 0 auto;
-  }
-
-  .app-sidebar.is-collapsed .app-sidebar-footer,
-  .app-sidebar.is-collapsed .app-sidebar-caption,
-  .app-sidebar.is-collapsed .app-brand-text,
-  .app-sidebar.is-collapsed .app-nav-label,
-  .app-sidebar.is-collapsed .app-account-summary-text {
-    display: none;
-  }
-
-  .app-sidebar.is-collapsed .app-nav-item {
-    justify-content: center;
-    padding-inline: 0.5rem;
+  .app-sidebar.is-compact .app-sidebar-brand {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-block: 0.5rem;
   }
 }
 
 @media (max-width: 767px) {
-  .app-sidebar {
+  .app-sidebar,
+  .app-sidebar.is-compact {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 50;
+    width: min(84vw, 288px);
+    min-width: min(84vw, 288px);
     transform: translateX(-102%);
     box-shadow: var(--shadow-overlay);
   }
