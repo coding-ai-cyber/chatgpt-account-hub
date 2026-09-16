@@ -1,4 +1,3 @@
-import { useLanguage } from "../../lib/i18n";
 import { Icon, type IconName } from "../layout/Icon";
 
 interface MetricCardProps {
@@ -9,9 +8,8 @@ interface MetricCardProps {
 }
 
 export function MetricCard({ label, value, sub, icon }: MetricCardProps) {
-  const { t } = useLanguage();
   return (
-    <div className="app-surface p-3.5 min-w-0">
+    <div data-testid="summary-metric" className="metric-card min-w-0 p-3.5">
       <div className="flex items-center gap-2">
         {icon && (
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg app-surface-secondary app-accent">
@@ -23,8 +21,7 @@ export function MetricCard({ label, value, sub, icon }: MetricCardProps) {
       <div className="metric-card-value mt-2.5 text-lg font-semibold app-text-primary">
         {value}
       </div>
-      {sub && <div className="mt-0.5 truncate text-[11px] app-text-muted">{sub}</div>}
-      {!sub && icon && <span className="sr-only">{t("noRateLimitData")}</span>}
+      {sub && <div className="mt-0.5 truncate text-[11px] app-text-secondary">{sub}</div>}
     </div>
   );
 }

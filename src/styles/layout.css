@@ -454,3 +454,100 @@
     grid-template-columns: 1fr;
   }
 }
+
+.current-account-dashboard {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.current-account-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.metric-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--surface-primary) 82%, transparent);
+  box-shadow: 0 6px 18px rgba(37, 55, 88, 0.045);
+}
+
+.current-account-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.8fr);
+  gap: 0.75rem;
+}
+
+.recent-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.recent-activity-grid > div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.7rem;
+  border-radius: var(--radius-control);
+  background: var(--surface-secondary);
+}
+
+.recent-activity-grid span {
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+}
+
+.recent-activity-grid strong {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.usage-advice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 4rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 11%, var(--surface-primary)),
+    color-mix(in srgb, #8b5cf6 9%, var(--surface-primary))
+  );
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.usage-advice-icon {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  background: var(--surface-primary);
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .current-account-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .current-account-lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 540px) {
+  .current-account-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .recent-activity-grid {
+    grid-template-columns: 1fr;
+  }
+}

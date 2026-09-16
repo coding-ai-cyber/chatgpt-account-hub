@@ -164,3 +164,14 @@ test("account actions are grouped and delete stays behind the more menu", async 
   await expect(quotaLimits.getByText("5 小时额度")).toBeVisible();
   await expect(quotaLimits.getByText("7 天额度")).toBeVisible();
 });
+
+test("dashboard shows four summary metrics and a real peak date", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/tests/ui/preview.html");
+  await expect(page.locator("[data-testid='summary-metric']")).toHaveCount(4);
+  await expect(page.getByText("峰值日期")).toBeVisible();
+  await expect(page.getByText(/2026年9月14日|2026\/9\/14/)).toBeVisible();
+  await expect(page.getByText("0%")).toBeVisible();
+  await expect(page.getByText("最长任务")).toHaveCount(0);
+  await expect(page.getByText("当前额度充足，无需切换账户。")).toBeVisible();
+});

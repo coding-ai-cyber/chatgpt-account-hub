@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { AppShell } from "../../src/app/AppShell";
-import { CurrentAccountHero } from "../../src/components/dashboard/CurrentAccountHero";
+import { CurrentAccountDashboard } from "../../src/components/dashboard/CurrentAccountDashboard";
 import { LanguageProvider } from "../../src/lib/i18n";
-import { fixtureAccount } from "./fixtures";
+import { fixtureAccount, fixtureStats } from "./fixtures";
 import "../../src/App.css";
 import "../../src/styles/tokens.css";
 import "../../src/styles/layout.css";
@@ -21,15 +21,20 @@ function Preview() {
       toolbar={<div className="app-toolbar app-toolbar-bg"><strong>当前账户</strong></div>}
     >
       <div className="app-content-inner">
-        <CurrentAccountHero
+        <CurrentAccountDashboard
           account={fixtureAccount}
           masked={false}
+          stats={fixtureStats}
+          statsLoading={false}
+          statsError={null}
           onOpenInBrowser={() => {}}
           onRefresh={() => {}}
           onWarmup={() => {}}
           onToggleMask={() => {}}
           onToggleAutoWarmup={() => {}}
           onDelete={() => {}}
+          onRefreshStats={() => {}}
+          onViewFullStats={() => {}}
         />
       </div>
     </AppShell>
