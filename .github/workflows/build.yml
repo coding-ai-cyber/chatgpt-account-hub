@@ -114,3 +114,74 @@ jobs:
           uploadUpdaterJson: true
           retryAttempts: 3
           args: --target ${{ matrix.target }}
+
+  publish-updater-manifest:
+    name: Publish updater manifest
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+    steps:
+      - name: Generate and upload latest.json
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}")"
+          temp_dir="${RUNNER_TEMP}/updater-signatures"
+          mkdir -p "$temp_dir"
+
+          find_asset() {
+            local suffix="$1"
+            echo "$release_json" | jq -r --arg suffix "$suffix" \
+              '.assets[] | select(.name | endswith($suffix)) | .name' | head -n 1
+          }
+
+          asset_url() {
+            local name="$1"
+            echo "$release_json" | jq -r --arg name "$name" \
+              '.assets[] | select(.name == $name) | .browser_download_url'
+          }
+
+          signature() {
+            local name="$1"
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern "$name.sig" --dir "$temp_dir" --clobber >/dev/null
+            tr -d '\r\n' < "$temp_dir/$name.sig"
+          }
+
+          windows_asset="$(find_asset 'x64-setup.exe')"
+          linux_asset="$(find_asset 'amd64.AppImage')"
+          darwin_arm_asset="$(find_asset '_aarch64.app.tar.gz')"
+          darwin_x64_asset="$(find_asset '_x64.app.tar.gz')"
+
+          for asset in "$windows_asset" "$linux_asset" "$darwin_arm_asset" "$darwin_x64_asset"; do
+            test -n "$asset"
+            test "$(asset_url "$asset")" != "null"
+          done
+
+          jq -n \
+            --arg version "$RELEASE_TAG" \
+            --arg notes "ChatGPT 账号管家 ${RELEASE_TAG} 更新" \
+            --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg win_url "$(asset_url "$windows_asset")" \
+            --arg win_sig "$(signature "$windows_asset")" \
+            --arg linux_url "$(asset_url "$linux_asset")" \
+            --arg linux_sig "$(signature "$linux_asset")" \
+            --arg darwin_arm_url "$(asset_url "$darwin_arm_asset")" \
+            --arg darwin_arm_sig "$(signature "$darwin_arm_asset")" \
+            --arg darwin_x64_url "$(asset_url "$darwin_x64_asset")" \
+            --arg darwin_x64_sig "$(signature "$darwin_x64_asset")" \
+            '{version: $version, notes: $notes, pub_date: $pub_date, platforms: {
+              "windows-x86_64": {signature: $win_sig, url: $win_url},
+              "linux-x86_64": {signature: $linux_sig, url: $linux_url},
+              "darwin-aarch64": {signature: $darwin_arm_sig, url: $darwin_arm_url},
+              "darwin-x86_64": {signature: $darwin_x64_sig, url: $darwin_x64_url}
+            }}' > latest.json
+
+          jq empty latest.json
+          gh release upload "$RELEASE_TAG" latest.json \
+            --repo "$GITHUB_REPOSITORY" --clobber
