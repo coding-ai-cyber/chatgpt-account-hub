@@ -23,15 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest
-            target: aarch64-apple-darwin
-            name: macos-arm64
-          - platform: macos-latest
-            target: x86_64-apple-darwin
-            name: macos-x64
-          - platform: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
-            name: linux-x64
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
             name: windows-x64
@@ -58,12 +49,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-
-      - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install frontend dependencies
         run: pnpm install
@@ -111,9 +96,9 @@ jobs:
           generateReleaseNotes: true
           releaseDraft: false
           prerelease: false
-          uploadUpdaterJson: true
+          uploadUpdaterJson: false
           retryAttempts: 3
-          args: --target ${{ matrix.target }}
+          args: --target ${{ matrix.target }} --bundles nsis
 
   publish-updater-manifest:
     name: Publish updater manifest
@@ -154,14 +139,8 @@ jobs:
           }
 
           windows_asset="$(find_asset 'x64-setup.exe')"
-          linux_asset="$(find_asset 'amd64.AppImage')"
-          darwin_arm_asset="$(find_asset '_aarch64.app.tar.gz')"
-          darwin_x64_asset="$(find_asset '_x64.app.tar.gz')"
-
-          for asset in "$windows_asset" "$linux_asset" "$darwin_arm_asset" "$darwin_x64_asset"; do
-            test -n "$asset"
-            test "$(asset_url "$asset")" != "null"
-          done
+          test -n "$windows_asset"
+          test "$(asset_url "$windows_asset")" != "null"
 
           jq -n \
             --arg version "$RELEASE_TAG" \
@@ -169,17 +148,8 @@ jobs:
             --arg pub_date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --arg win_url "$(asset_url "$windows_asset")" \
             --arg win_sig "$(signature "$windows_asset")" \
-            --arg linux_url "$(asset_url "$linux_asset")" \
-            --arg linux_sig "$(signature "$linux_asset")" \
-            --arg darwin_arm_url "$(asset_url "$darwin_arm_asset")" \
-            --arg darwin_arm_sig "$(signature "$darwin_arm_asset")" \
-            --arg darwin_x64_url "$(asset_url "$darwin_x64_asset")" \
-            --arg darwin_x64_sig "$(signature "$darwin_x64_asset")" \
             '{version: $version, notes: $notes, pub_date: $pub_date, platforms: {
-              "windows-x86_64": {signature: $win_sig, url: $win_url},
-              "linux-x86_64": {signature: $linux_sig, url: $linux_url},
-              "darwin-aarch64": {signature: $darwin_arm_sig, url: $darwin_arm_url},
-              "darwin-x86_64": {signature: $darwin_x64_sig, url: $darwin_x64_url}
+              "windows-x86_64": {signature: $win_sig, url: $win_url}
             }}' > latest.json
 
           jq empty latest.json
