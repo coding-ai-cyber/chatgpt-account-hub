@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 import {
@@ -19,6 +19,24 @@ test("project links point to the owner's repository", () => {
     PROJECT_UPDATE_MANIFEST_URL,
     `${PROJECT_RELEASES_URL}/download/latest.json`,
   );
+});
+
+test("app icon master follows the ChatGPT account hub mark", () => {
+  const root = resolve(import.meta.dirname, "..");
+  const logo = readFileSync(resolve(root, "src-tauri/icons/logo.svg"), "utf8");
+  assert.match(logo, /viewBox="0 0 1024 1024"/);
+  assert.match(logo, /<linearGradient\b/);
+  assert.match(logo, /aria-label="ChatGPT 账号管家"/);
+  assert.match(logo, /<path\b/);
+  assert.doesNotMatch(logo, /account 1|account 2|Switch arrows/i);
+
+  const config = JSON.parse(
+    readFileSync(resolve(root, "src-tauri/tauri.conf.json"), "utf8"),
+  ) as { bundle?: { icon?: string[] } };
+  for (const iconPath of config.bundle?.icon ?? []) {
+    const asset = resolve(root, "src-tauri", iconPath);
+    assert.ok(statSync(asset).size > 0, `${iconPath} should be a non-empty generated asset`);
+  }
 });
 
 test("project consumers do not retain the original repository URL", () => {
