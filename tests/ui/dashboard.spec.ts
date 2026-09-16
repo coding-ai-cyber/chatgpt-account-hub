@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.use({ timezoneId: "Asia/Shanghai" });
+test.beforeEach(async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-09-16T08:00:00Z"));
+});
+
 test("888px viewport uses a compact sidebar without horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 888, height: 693 });
   await page.goto("/tests/ui/preview.html");
@@ -185,3 +190,92 @@ test("dashboard shows four summary metrics and a real peak date", async ({ page 
   await expect(page.getByText("最长任务")).toHaveCount(0);
   await expect(page.getByText("当前额度充足，无需切换账户。")).toBeVisible();
 });
+
+for (const skin of ["default", "glass", "graphite", "mint", "illustrated"] as const) {
+  test(`${skin} skin keeps the approved dashboard structure`, async ({ page }) => {
+    await page.setViewportSize({ width: 1120, height: 760 });
+    await page.goto(`/tests/ui/preview.html?skin=${skin}`);
+    await expect(page.locator(".current-account-hero")).toBeVisible();
+    expect(await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )).toBe(0);
+    await expect(page).toHaveScreenshot(`current-account-${skin}-1120x760.png`, {
+      animations: "disabled",
+      fullPage: true,
+    });
+  });
+}
+
+test("default dashboard remains usable at the minimum window", async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 500 });
+  await page.goto("/tests/ui/preview.html?skin=default");
+  await expect(page.locator(".current-account-hero")).toBeVisible();
+  const overflow = await page.evaluate(() => ({
+    document: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    main: document.querySelector<HTMLElement>(".app-main")!.scrollWidth -
+      document.querySelector<HTMLElement>(".app-main")!.clientWidth,
+  }));
+  expect(overflow).toEqual({ document: 0, main: 0 });
+  await expect(page).toHaveScreenshot("current-account-default-600x500.png", {
+    animations: "disabled",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "更多账户操作" }).click();
+  await expect(page.getByRole("button", { name: "移除账户" })).toBeVisible();
+  await page.getByRole("button", { name: "更多账户操作" }).click();
+  const fullStatsButton = page.getByRole("button", { name: "查看完整统计" });
+  await fullStatsButton.scrollIntoViewIfNeeded();
+  await expect(fullStatsButton).toBeInViewport();
+  await fullStatsButton.click();
+});
+
+for (const viewport of [
+  { width: 900, height: 700 },
+  { width: 1440, height: 900 },
+] as const) {
+  test(`default dashboard has no overflow at ${viewport.width}x${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/tests/ui/preview.html?skin=default");
+    const overflow = await page.evaluate(() => ({
+      document: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      sidebar: document.querySelector<HTMLElement>(".app-sidebar")!.scrollWidth -
+        document.querySelector<HTMLElement>(".app-sidebar")!.clientWidth,
+      main: document.querySelector<HTMLElement>(".app-main")!.scrollWidth -
+        document.querySelector<HTMLElement>(".app-main")!.clientWidth,
+    }));
+    expect(overflow).toEqual({ document: 0, sidebar: 0, main: 0 });
+  });
+}
+
+for (const skin of [
+  "default", "mint", "graphite", "aurora", "cyberpunk", "minecraft", "glass",
+  "mcwood", "illustrated", "anime-sunset", "anime-neon", "anime-forest", "anime-stars",
+] as const) {
+  test(`${skin} skin has no structural overflow`, async ({ page }) => {
+    await page.setViewportSize({ width: 1120, height: 760 });
+    await page.goto(`/tests/ui/preview.html?skin=${skin}`);
+    await expect(page.locator(".current-account-hero")).toBeVisible();
+    await expect(page.locator("[data-testid='summary-metric']")).toHaveCount(4);
+    if (skin === "default") {
+      await expect(page.locator("html")).not.toHaveAttribute("data-skin");
+    } else {
+      await expect(page.locator("html")).toHaveAttribute("data-skin", skin);
+    }
+    const overflow = await page.evaluate(() => ({
+      document: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      sidebar: document.querySelector<HTMLElement>(".app-sidebar")!.scrollWidth -
+        document.querySelector<HTMLElement>(".app-sidebar")!.clientWidth,
+      main: document.querySelector<HTMLElement>(".app-main")!.scrollWidth -
+        document.querySelector<HTMLElement>(".app-main")!.clientWidth,
+    }));
+    expect(overflow).toEqual({ document: 0, sidebar: 0, main: 0 });
+    if (skin === "minecraft" || skin === "mcwood") {
+      const screenshotPath = test.info().outputPath(`${skin}-readability.png`);
+      await page.screenshot({ path: screenshotPath, fullPage: true, animations: "disabled" });
+      await test.info().attach(`${skin}-readability`, {
+        path: screenshotPath,
+        contentType: "image/png",
+      });
+    }
+  });
+}

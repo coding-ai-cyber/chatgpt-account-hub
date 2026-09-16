@@ -89,6 +89,29 @@ pnpm tauri build
 
 The built application will be in `src-tauri/target/release/bundle/`.
 
+### Dashboard UI verification
+
+```bash
+pnpm test:dashboard
+pnpm exec playwright install chromium
+pnpm test:ui
+```
+
+`test:dashboard` validates quota, peak-date, default-theme, and sidebar-state rules.
+`test:ui` starts a local Vite fixture with a fixed clock and Asia/Shanghai timezone,
+checks responsive navigation and overflow at 600×500, 888×693, 900×700, 1120×760,
+and 1440×900, and checks all 13 skins. Six screenshot baselines cover the default,
+glass, graphite, mint, and illustrated skins, including the minimum window size.
+Install the local Chromium runtime once with the command above. Baselines are
+platform-specific; the checked-in images were captured on Windows.
+
+After an intentional visual change, run `pnpm test:ui --update-snapshots`, inspect
+every changed image under `tests/ui/dashboard.spec.ts-snapshots/`, then rerun
+`pnpm test:ui` before committing the new baselines. Minecraft and mcwood readability
+screenshots are attached to their test results without adding image baselines.
+These fixtures use local sample data and do not verify native tray behavior,
+account switching, updater installation, or persistence across application restarts.
+
 ### Run the Dashboard in a Browser
 
 You can also serve the built dashboard over HTTP instead of opening the Tauri shell.

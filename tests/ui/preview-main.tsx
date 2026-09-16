@@ -58,6 +58,12 @@ function Preview() {
 }
 
 window.localStorage.setItem("codex-switcher-language", "zh-CN");
+const skin = new URLSearchParams(window.location.search).get("skin");
+if (skin && skin !== "default") {
+  document.documentElement.setAttribute("data-skin", skin);
+} else {
+  document.documentElement.removeAttribute("data-skin");
+}
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <LanguageProvider><Preview /></LanguageProvider>,
 );
