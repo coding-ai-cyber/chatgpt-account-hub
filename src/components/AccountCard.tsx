@@ -13,6 +13,7 @@ const USAGE_STATS_OPEN_STORAGE_KEY_PREFIX = "usage-stats-open:";
 interface AccountCardProps {
   account: AccountWithUsage;
   onSwitch: () => void;
+  onOpenInBrowser?: () => void;
   onWarmup: () => Promise<void>;
   onDelete: () => void;
   onRefresh: () => Promise<unknown>;
@@ -27,6 +28,8 @@ interface AccountCardProps {
   autoWarmupManagedByAll?: boolean;
   autoWarmupLabel?: string;
   onToggleAutoWarmup?: () => void;
+  onSelect?: () => void;
+  onStatsLoaded?: (stats: AccountUsageStatsInfo | null) => void;
 }
 
 function formatLastRefresh(date: Date | null, t: Translate, locale: string): string {
@@ -100,6 +103,7 @@ function BlurredText({ children, blur }: { children: React.ReactNode; blur: bool
 export function AccountCard({
   account,
   onSwitch,
+  onOpenInBrowser,
   onWarmup,
   onDelete,
   onRefresh,
@@ -114,6 +118,8 @@ export function AccountCard({
   autoWarmupManagedByAll = false,
   autoWarmupLabel,
   onToggleAutoWarmup,
+  onSelect,
+  onStatsLoaded,
 }: AccountCardProps) {
   const { language, t } = useLanguage();
   const locale = languageLocale(language);
@@ -265,6 +271,11 @@ export function AccountCard({
 
   return (
     <div
+      onClick={(event) => {
+        if (onSelect && !(event.target as HTMLElement).closest("[data-account-action]")) {
+          onSelect();
+        }
+      }}
       className={`relative rounded-xl border p-5 transition-all duration-200 ${
         account.is_active
           ? "bg-white dark:bg-gray-900 border-emerald-400 shadow-sm"
@@ -311,7 +322,7 @@ export function AccountCard({
           )}
         </div>
 
-        <div className="flex max-w-[60%] flex-wrap items-center justify-end gap-2">
+        <div data-account-action className="flex max-w-[60%] flex-wrap items-center justify-end gap-2">
           {/* Refresh */}
           <button
             onClick={handleRefresh}
@@ -371,7 +382,17 @@ export function AccountCard({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 mt-3">
+      <div data-account-action className="flex gap-2 mt-3">
+        {onOpenInBrowser && (
+          <button
+            onClick={onOpenInBrowser}
+            disabled={switching || switchDisabled}
+            className="px-3 py-2 text-sm rounded-lg transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t("openInBrowser")}
+          >
+            ↗
+          </button>
+        )}
         {account.is_active ? (
           <button
             disabled
@@ -465,14 +486,19 @@ export function AccountCard({
         </button>
       </div>
 
-      <AccountUsageStats
-        accountId={account.id}
-        enabled={account.auth_mode === "chat_g_p_t"}
-        open={statsOpen}
-        usage={account.usage}
-        usageLoading={account.usageLoading}
-        onStatsLoaded={handleStatsLoaded}
-      />
+      <div data-account-action>
+        <AccountUsageStats
+          accountId={account.id}
+          enabled={account.auth_mode === "chat_g_p_t"}
+          open={statsOpen}
+          usage={account.usage}
+          usageLoading={account.usageLoading}
+          onStatsLoaded={(stats) => {
+            handleStatsLoaded(stats);
+            onStatsLoaded?.(stats);
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -9,3 +9,972 @@
 :root.dark {
   color-scheme: dark;
 }
+
+:root[data-skin="mint"] {
+  color-scheme: light;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --color-gray-50: #effaf4;
+  --color-gray-100: #def4e7;
+  --color-gray-200: #c7ead6;
+  --color-gray-300: #a8d8bd;
+  --color-gray-400: #7fb79a;
+  --color-gray-500: #5f9a7e;
+  --color-gray-600: #477f66;
+  --color-gray-700: #386653;
+  --color-gray-800: #2d5444;
+  --color-gray-900: #264739;
+  --color-gray-950: #142c23;
+  --color-emerald-400: #2dd4a7;
+  --color-emerald-500: #10b590;
+  --color-emerald-600: #07976f;
+  --color-emerald-700: #067a5a;
+  --color-amber-500: #e29b2c;
+}
+
+:root[data-skin="graphite"] {
+  color-scheme: dark;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --skin-panel: #252b31;
+  --color-gray-50: #171b1f;
+  --color-gray-100: #1d2228;
+  --color-gray-200: #252c33;
+  --color-gray-300: #333c45;
+  --color-gray-400: #56616c;
+  --color-gray-500: #7b8792;
+  --color-gray-600: #a1abb5;
+  --color-gray-700: #c1c9d1;
+  --color-gray-800: #d7dde3;
+  --color-gray-900: #eff2f5;
+  --color-gray-950: #f9fafb;
+  --color-amber-400: #f6bd61;
+  --color-amber-500: #e7a83c;
+  --color-amber-600: #c88724;
+  --color-orange-400: #f0925f;
+  --color-orange-500: #e2723b;
+  --color-orange-600: #c45428;
+}
+
+:root[data-skin="aurora"] {
+  color-scheme: dark;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --skin-panel: #10232c;
+  --color-gray-50: #071117;
+  --color-gray-100: #0d1d26;
+  --color-gray-200: #15303a;
+  --color-gray-300: #234957;
+  --color-gray-400: #386678;
+  --color-gray-500: #5a899e;
+  --color-gray-600: #83a8b8;
+  --color-gray-700: #aec6d1;
+  --color-gray-800: #d0dfe5;
+  --color-gray-900: #eaf2f5;
+  --color-gray-950: #f8fbfc;
+  --color-emerald-400: #39d7a6;
+  --color-emerald-500: #1ec291;
+  --color-emerald-600: #0d9f76;
+  --color-emerald-700: #0a7f5f;
+  --color-teal-300: #68d8c8;
+  --color-teal-400: #35bfb4;
+  --color-teal-500: #16a096;
+  --color-red-400: #ff827e;
+  --color-red-500: #ef635d;
+  --color-red-600: #d44743;
+  --color-amber-400: #ff9d75;
+  --color-amber-500: #f17e4f;
+  --color-amber-600: #cc5d37;
+}
+
+:root[data-skin="cyberpunk"] {
+  color-scheme: dark;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --skin-panel: #141d29;
+  --color-gray-50: #0a0f14;
+  --color-gray-100: #171f2c;
+  --color-gray-200: #1f2a38;
+  --color-gray-300: #2e3a4c;
+  --color-gray-400: #465568;
+  --color-gray-500: #63738c;
+  --color-gray-600: #8c9bb2;
+  --color-gray-700: #b8c5d8;
+  --color-gray-800: #dce5f2;
+  --color-gray-900: #f5f7ff;
+  --color-gray-950: #f8fbff;
+  --color-blue-50: #eaf8ff;
+  --color-blue-100: #caf0ff;
+  --color-blue-200: #9be4ff;
+  --color-blue-300: #5fcff8;
+  --color-blue-400: #2db9e8;
+  --color-blue-500: #12a5d8;
+  --color-blue-600: #0b87b6;
+  --color-blue-700: #0d6b92;
+  --color-blue-800: #125873;
+  --color-blue-900: #154a5e;
+  --color-indigo-50: #f2f0ff;
+  --color-indigo-100: #e4dfff;
+  --color-indigo-200: #cbbdff;
+  --color-indigo-300: #ab93fa;
+  --color-indigo-400: #9069f5;
+  --color-indigo-500: #7b4ee3;
+  --color-indigo-600: #6535c2;
+  --color-indigo-700: #542a9f;
+  --color-indigo-800: #45277d;
+  --color-indigo-900: #391f65;
+  --color-emerald-50: #e7fff6;
+  --color-emerald-100: #c5ffea;
+  --color-emerald-200: #80ffd4;
+  --color-emerald-300: #46f5bb;
+  --color-emerald-400: #1ee5a6;
+  --color-emerald-500: #0cc58e;
+  --color-emerald-600: #00a175;
+  --color-emerald-700: #0a7e5e;
+  --color-emerald-800: #12634d;
+  --color-emerald-900: #125040;
+  --color-amber-50: #fffbe8;
+  --color-amber-100: #fff5c2;
+  --color-amber-200: #ffe98a;
+  --color-amber-300: #ffd94d;
+  --color-amber-400: #f6c93c;
+  --color-amber-500: #f6b928;
+  --color-amber-600: #d89a14;
+  --color-amber-700: #b37809;
+  --color-amber-800: #8f5e0d;
+  --color-amber-900: #734c10;
+  --color-red-50: #fff0f4;
+  --color-red-100: #ffdce4;
+  --color-red-200: #ffb4c6;
+  --color-red-300: #ff85a3;
+  --color-red-400: #f65e83;
+  --color-red-500: #e64068;
+  --color-red-600: #c92b54;
+  --color-red-700: #a51f45;
+  --color-red-800: #861c3b;
+  --color-red-900: #701c35;
+  --color-orange-400: #ff9b68;
+  --color-orange-500: #f47b3f;
+  --color-orange-600: #d45d27;
+}
+
+:root[data-skin="cyberpunk"] .min-h-screen.bg-gray-50 {
+  background-image:
+    linear-gradient(rgba(18, 165, 216, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246, 185, 40, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+:root[data-skin="glass"] {
+  color-scheme: dark;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --skin-panel: rgba(255, 255, 255, 0.13);
+  --color-gray-50: #11172b;
+  --color-gray-100: #18223b;
+  --color-gray-200: #263350;
+  --color-gray-300: #3a4a6f;
+  --color-gray-400: #5d6d94;
+  --color-gray-500: #8492b1;
+  --color-gray-600: #aeb8ce;
+  --color-gray-700: #d0d6e5;
+  --color-gray-800: #e8ebf4;
+  --color-gray-900: #f7f8fc;
+  --color-gray-950: #fbfcff;
+  --color-blue-300: #7dd3fc;
+  --color-blue-400: #38bdf8;
+  --color-blue-500: #0ea5e9;
+  --color-blue-600: #0284c7;
+  --color-blue-700: #0369a1;
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+  --color-fuchsia-300: #f0abfc;
+  --color-fuchsia-400: #e879f9;
+  --color-fuchsia-500: #d946ef;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+}
+
+:root[data-skin="glass"] .min-h-screen.bg-gray-50 {
+  background-color: #0d1226;
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(56, 189, 248, 0.34),
+      rgba(129, 64, 246, 0.27) 42%,
+      rgba(244, 114, 182, 0.23) 76%,
+      rgba(251, 146, 60, 0.16)
+    );
+}
+
+:root[data-skin="glass"] body,
+:root[data-skin="glass"] button,
+:root[data-skin="glass"] input,
+:root[data-skin="glass"] select,
+:root[data-skin="glass"] textarea {
+  font-family: "Segoe UI", "Inter", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+}
+
+:root[data-skin="glass"] .fixed.inset-0 {
+  background-color: rgba(8, 12, 28, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+:root[data-skin="glass"] button {
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  border-radius: 10px !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f7f8fc !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 6px 20px rgba(3, 7, 18, 0.22) !important;
+  transition:
+    background-color 150ms ease-out,
+    transform 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+:root[data-skin="glass"] button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+:root[data-skin="glass"] button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+  box-shadow:
+    inset 0 2px 0 rgba(3, 7, 18, 0.14),
+    0 3px 12px rgba(3, 7, 18, 0.18) !important;
+}
+
+:root[data-skin="glass"] button:disabled {
+  opacity: 0.55;
+  filter: saturate(0.55);
+  cursor: not-allowed;
+}
+
+:root[data-skin="glass"] [role="radio"][aria-checked="true"] {
+  border-color: rgba(125, 211, 252, 0.95) !important;
+  background-color: rgba(56, 189, 248, 0.28) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.26) !important;
+}
+
+:root[data-skin="glass"] :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid rgba(56, 189, 248, 0.65);
+  outline-offset: 2px;
+}
+
+:root[data-skin="glass"] input,
+:root[data-skin="glass"] select,
+:root[data-skin="glass"] textarea {
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  border-radius: 10px !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f7f8fc !important;
+  backdrop-filter: blur(12px) saturate(135%);
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 4px 16px rgba(3, 7, 18, 0.18) !important;
+}
+
+:root[data-skin="glass"] input::placeholder,
+:root[data-skin="glass"] textarea::placeholder {
+  color: rgba(244, 247, 255, 0.58);
+}
+
+:root[data-skin="glass"] select option {
+  background-color: #18223b;
+  color: #f7f8fc;
+}
+
+:root[data-skin="glass"] .bg-white {
+  background-color: rgba(255, 255, 255, 0.13) !important;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 10px 36px rgba(3, 7, 18, 0.18) !important;
+}
+
+:root[data-skin="glass"] .absolute.bg-white,
+:root[data-skin="glass"] .fixed > .bg-white {
+  background-color: rgba(15, 21, 41, 0.96) !important;
+  color: #f7f8fc !important;
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 14px 44px rgba(2, 6, 18, 0.5) !important;
+}
+
+:root[data-skin="glass"] header.sticky.bg-white,
+:root[data-skin="glass"] header .flex.bg-white {
+  background-color: rgba(13, 18, 36, 0.82) !important;
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 4px 18px rgba(2, 6, 18, 0.24) !important;
+}
+
+:root[data-skin="glass"] header button {
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+:root[data-skin="minecraft"] {
+  color-scheme: light;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --skin-panel: #f5de8e;
+  --color-gray-50: #fff7c9;
+  --color-gray-100: #f6e79d;
+  --color-gray-200: #edd778;
+  --color-gray-300: #ddc257;
+  --color-gray-400: #c0a441;
+  --color-gray-500: #99812f;
+  --color-gray-600: #6d5c24;
+  --color-gray-700: #4b3e1c;
+  --color-gray-800: #352b16;
+  --color-gray-900: #281f10;
+  --color-gray-950: #1b150b;
+  --color-emerald-50: #e5f9ed;
+  --color-emerald-100: #c2f0d4;
+  --color-emerald-200: #8ce1b0;
+  --color-emerald-300: #53cc88;
+  --color-emerald-400: #37b86c;
+  --color-emerald-500: #2fa45e;
+  --color-emerald-600: #25834a;
+  --color-emerald-700: #1f683e;
+  --color-emerald-800: #1b5033;
+  --color-emerald-900: #17402a;
+  --color-amber-50: #fff9dd;
+  --color-amber-100: #fff0b6;
+  --color-amber-200: #ffe086;
+  --color-amber-300: #ffce54;
+  --color-amber-400: #f7bc37;
+  --color-amber-500: #e5a52b;
+  --color-amber-600: #c4841c;
+  --color-amber-700: #9d6418;
+  --color-amber-800: #814f18;
+  --color-amber-900: #6a4018;
+  --color-red-50: #fff0ec;
+  --color-red-100: #ffd8d0;
+  --color-red-200: #ffb0a2;
+  --color-red-300: #f97b68;
+  --color-red-400: #ea523f;
+  --color-red-500: #d43a28;
+  --color-red-600: #b62b1c;
+  --color-red-700: #932519;
+  --color-red-800: #77211a;
+  --color-red-900: #611f1a;
+  --color-blue-50: #e8f3fe;
+  --color-blue-100: #cce7fc;
+  --color-blue-200: #9ed2f7;
+  --color-blue-300: #66b8ee;
+  --color-blue-400: #3b9fe2;
+  --color-blue-500: #2586ca;
+  --color-blue-600: #1c6ca7;
+  --color-blue-700: #1b5685;
+  --color-blue-800: #1c4869;
+  --color-blue-900: #1b3e57;
+  --color-indigo-50: #eef1fa;
+  --color-indigo-100: #dce3f3;
+  --color-indigo-200: #c0cbe6;
+  --color-indigo-300: #9eadd4;
+  --color-indigo-400: #7d8fc0;
+  --color-indigo-500: #6676a9;
+  --color-indigo-600: #545f8b;
+  --color-indigo-700: #475071;
+  --color-indigo-800: #3b425d;
+  --color-indigo-900: #33394c;
+  --color-orange-400: #d98d3f;
+  --color-orange-500: #c56d2a;
+  --color-orange-600: #a45320;
+  --color-green-500: #2f9f52;
+}
+
+:root[data-skin="minecraft"] .min-h-screen.bg-gray-50 {
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.35) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.35) 75%),
+    linear-gradient(45deg, rgba(160, 124, 45, 0.14) 25%, transparent 25%, transparent 75%, rgba(160, 124, 45, 0.14) 75%),
+    linear-gradient(180deg, rgba(255, 248, 196, 0.55), transparent 32%);
+  background-position: 0 0, 32px 32px, 0 0;
+  background-size: 64px 64px, 64px 64px, 100% 220px;
+}
+
+:root[data-skin="minecraft"] body,
+:root[data-skin="minecraft"] button,
+:root[data-skin="minecraft"] input,
+:root[data-skin="minecraft"] select,
+:root[data-skin="minecraft"] textarea {
+  font-family: "Minecraft", "Consolas", "Microsoft YaHei UI", "Microsoft YaHei", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-skin="minecraft"] button {
+  min-height: 30px;
+  border: 2px solid #5a4313 !important;
+  border-radius: 0 !important;
+  background-color: #f0c84b !important;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 42%, rgba(160, 105, 16, 0.22)),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.16) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.16) 75%);
+  background-size: 100% 100%, 8px 8px;
+  color: #3d2f12 !important;
+  text-shadow: 1px 1px 0 rgba(255, 245, 190, 0.9);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset -2px -2px 0 rgba(122, 82, 15, 0.42),
+    inset 2px -2px 0 rgba(122, 82, 15, 0.24),
+    0 4px 0 #805a16 !important;
+  transition:
+    transform 80ms steps(2, end),
+    background-color 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+:root[data-skin="minecraft"] button:hover:not(:disabled) {
+  background-color: #ffdb63 !important;
+  filter: brightness(1.02);
+}
+
+:root[data-skin="minecraft"] button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 3px 0 rgba(122, 82, 15, 0.32),
+    0 1px 0 #805a16 !important;
+}
+
+:root[data-skin="minecraft"] button:disabled {
+  opacity: 0.55;
+  filter: grayscale(0.45) brightness(0.95);
+  cursor: not-allowed;
+}
+
+:root[data-skin="minecraft"] [role="radio"][aria-checked="true"] {
+  border-color: #3d2f12 !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset -2px -2px 0 rgba(122, 82, 15, 0.42),
+    0 4px 0 #805a16,
+    0 0 0 3px rgba(47, 159, 82, 0.4) !important;
+}
+
+:root[data-skin="minecraft"] :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #2f9f52;
+  outline-offset: 2px;
+}
+
+:root[data-skin="minecraft"] input,
+:root[data-skin="minecraft"] select,
+:root[data-skin="minecraft"] textarea {
+  border: 2px solid #523d16 !important;
+  border-radius: 0 !important;
+  background-color: #fff4c0 !important;
+  color: #3a2f1a !important;
+  box-shadow:
+    inset 0 3px 0 rgba(122, 82, 15, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+}
+
+:root[data-skin="minecraft"] input::placeholder,
+:root[data-skin="minecraft"] textarea::placeholder {
+  color: #99812f;
+}
+
+:root[data-skin="minecraft"] select option {
+  background-color: #fff4c0;
+  color: #3a2f1a;
+}
+
+:root[data-skin="minecraft"] .bg-white {
+  background-color: var(--skin-panel);
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.14) 75%);
+  background-size: 8px 8px;
+}
+
+:root[data-skin="minecraft"] .rounded-full {
+  border-radius: 2px !important;
+}
+
+:root[data-skin="mcwood"] {
+  color-scheme: dark;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --skin-panel: #f2e0a8;
+  --color-gray-50: #3c210d;
+  --color-gray-100: #4a2a12;
+  --color-gray-200: #5c3418;
+  --color-gray-300: #6d3f1d;
+  --color-gray-400: #8a5528;
+  --color-gray-500: #a9743a;
+  --color-gray-600: #c99a58;
+  --color-gray-700: #e0bd7e;
+  --color-gray-800: #f0d9a4;
+  --color-gray-900: #f7ead0;
+  --color-gray-950: #fdf6e3;
+  --color-green-400: #5cae52;
+  --color-green-500: #3f8f3a;
+  --color-green-600: #2f7d32;
+  --color-emerald-400: #5cae52;
+  --color-emerald-500: #3f8f3a;
+  --color-emerald-600: #2f7d32;
+  --color-emerald-700: #26662a;
+  --color-blue-400: #4a8fe0;
+  --color-blue-500: #2f6fd0;
+  --color-blue-600: #2459a8;
+  --color-amber-400: #e0b34a;
+  --color-amber-500: #d9a441;
+  --color-amber-600: #b9832c;
+  --color-red-400: #d95a4a;
+  --color-red-500: #b5382c;
+  --color-red-600: #94261d;
+  --color-orange-500: #c56b2a;
+}
+
+:root[data-skin="mcwood"] .min-h-screen.bg-gray-50 {
+  background-color: #4a2a12;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0 3px, rgba(255, 255, 255, 0.035) 3px 46px, rgba(0, 0, 0, 0.14) 46px 50px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 32px),
+    linear-gradient(180deg, #5c3418, #361d0b);
+}
+
+:root[data-skin="mcwood"] body,
+:root[data-skin="mcwood"] button,
+:root[data-skin="mcwood"] input,
+:root[data-skin="mcwood"] select,
+:root[data-skin="mcwood"] textarea {
+  font-family: "Minecraft", "Consolas", "Microsoft YaHei UI", "Microsoft YaHei", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-skin="mcwood"] .bg-white {
+  --color-gray-900: #3a2413;
+  --color-gray-800: #4a2f15;
+  --color-gray-700: #5c3a19;
+  --color-gray-600: #6d4a24;
+  --color-gray-500: #7d5729;
+  --color-gray-400: #8f6a34;
+  --color-gray-300: #a9834a;
+  --color-gray-200: #c9a55e;
+  --color-gray-100: #e8d29a;
+  --color-gray-50: #f7e9bb;
+  background-color: #f2e0a8 !important;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(122, 82, 25, 0.06) 0 2px, transparent 2px 7px),
+    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.35), transparent 42%);
+  border: 2px solid #4a2a12 !important;
+  border-radius: 0 !important;
+  color: #3a2413 !important;
+  box-shadow:
+    0 0 0 3px #b98a3e,
+    inset 0 0 0 2px #fff3cc,
+    6px 6px 0 rgba(0, 0, 0, 0.32) !important;
+}
+
+:root[data-skin="mcwood"] main .bg-white {
+  position: relative !important;
+}
+
+:root[data-skin="mcwood"] main .bg-white::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  bottom: -5px;
+  width: 5px;
+  height: 5px;
+  background: #3f8f3a;
+  box-shadow:
+    -5px 0 #2f6f28,
+    5px 0 #4e9b3a,
+    0 5px #2f6f28,
+    -5px 5px #2f6f28,
+    5px 5px #3f8f3a;
+  pointer-events: none;
+}
+
+:root[data-skin="mcwood"] main .bg-white::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 5px;
+  height: 5px;
+  background: #c0392b;
+  box-shadow:
+    5px 0 #c0392b,
+    0 5px #f2e0a8,
+    5px 5px #f2e0a8,
+    2px 2px #fff3cc;
+  pointer-events: none;
+}
+
+:root[data-skin="mcwood"] header.sticky.bg-white,
+:root[data-skin="mcwood"] header .bg-white {
+  --color-gray-900: #f7ead0;
+  --color-gray-800: #f0d9a4;
+  --color-gray-700: #e0bd7e;
+  --color-gray-600: #d4b06a;
+  --color-gray-500: #c99a58;
+  --color-gray-400: #a9743a;
+  background-color: #5c3418 !important;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.26) 0 3px, rgba(255, 255, 255, 0.045) 3px 46px),
+    linear-gradient(180deg, #6d3f1d, #4a2a12) !important;
+  border-color: #2a1708 !important;
+  color: #f7ead0 !important;
+  box-shadow:
+    0 3px 0 #2a1708,
+    inset 0 2px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+:root[data-skin="mcwood"] button {
+  min-height: 30px;
+  border: 2px solid #4a2a12 !important;
+  border-radius: 0 !important;
+  background-color: #e8d29a !important;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 45%, rgba(150, 105, 30, 0.22)),
+    repeating-linear-gradient(90deg, rgba(122, 82, 25, 0.05) 0 2px, transparent 2px 10px);
+  color: #3a2413 !important;
+  text-shadow: 1px 1px 0 rgba(255, 247, 217, 0.85);
+  box-shadow:
+    inset 0 2px 0 #fff7d9,
+    inset 0 -3px 0 rgba(122, 82, 25, 0.45),
+    0 3px 0 #2a1708 !important;
+  transition:
+    transform 80ms steps(2, end),
+    background-color 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+:root[data-skin="mcwood"] button:hover:not(:disabled) {
+  background-color: #f7e9bb !important;
+}
+
+:root[data-skin="mcwood"] button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 3px 0 rgba(122, 82, 25, 0.35),
+    0 1px 0 #2a1708 !important;
+}
+
+:root[data-skin="mcwood"] button:disabled {
+  opacity: 0.55;
+  filter: grayscale(0.4) brightness(0.95);
+  cursor: not-allowed;
+}
+
+:root[data-skin="mcwood"] button[class*="bg-green"],
+:root[data-skin="mcwood"] button[class*="bg-emerald"],
+:root[data-skin="mcwood"] button[class*="bg-lime"] {
+  border-color: #214d1c !important;
+  background-color: #3f8f3a !important;
+  color: #f7ead0 !important;
+  text-shadow: 1px 1px 0 rgba(20, 45, 15, 0.75);
+  box-shadow:
+    inset 0 2px 0 #7ccf6e,
+    inset 0 -3px 0 rgba(20, 60, 15, 0.6),
+    0 3px 0 #1b3d18 !important;
+}
+
+:root[data-skin="mcwood"] button[class*="bg-red"] {
+  border-color: #5e1a12 !important;
+  background-color: #b5382c !important;
+  color: #fff3e0 !important;
+  text-shadow: 1px 1px 0 rgba(60, 12, 8, 0.75);
+  box-shadow:
+    inset 0 2px 0 #e07a6c,
+    inset 0 -3px 0 rgba(90, 20, 12, 0.65),
+    0 3px 0 #4a1209 !important;
+}
+
+:root[data-skin="mcwood"] [role="radio"][aria-checked="true"] {
+  border-color: #214d1c !important;
+  background-color: #3f8f3a !important;
+  color: #f7ead0 !important;
+  box-shadow:
+    inset 0 2px 0 #7ccf6e,
+    0 3px 0 #1b3d18,
+    0 0 0 3px rgba(63, 143, 58, 0.35) !important;
+}
+
+:root[data-skin="mcwood"] :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #f2c14e;
+  outline-offset: 2px;
+}
+
+:root[data-skin="mcwood"] input,
+:root[data-skin="mcwood"] select,
+:root[data-skin="mcwood"] textarea {
+  border: 2px solid #4a2a12 !important;
+  border-radius: 0 !important;
+  background-color: #f7e9bb !important;
+  color: #3a2413 !important;
+  box-shadow:
+    inset 0 2px 0 #fff7d9,
+    inset 0 -2px 0 rgba(122, 82, 25, 0.3) !important;
+}
+
+:root[data-skin="mcwood"] input::placeholder,
+:root[data-skin="mcwood"] textarea::placeholder {
+  color: #8f6a34;
+}
+
+:root[data-skin="mcwood"] select option {
+  background-color: #f7e9bb;
+  color: #3a2413;
+}
+
+:root[data-skin="mcwood"] .rounded-full {
+  border-radius: 2px !important;
+}
+
+:root[data-skin="anime-sunset"],
+:root[data-skin="anime-neon"],
+:root[data-skin="anime-forest"],
+:root[data-skin="anime-stars"] {
+  color-scheme: dark;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --skin-panel: rgba(10, 16, 30, 0.92);
+  --color-gray-50: #0e1526;
+  --color-gray-100: #162033;
+  --color-gray-200: #232e43;
+  --color-gray-300: #354158;
+  --color-gray-400: #5b6c83;
+  --color-gray-500: #93a3b6;
+  --color-gray-600: #b8c5d3;
+  --color-gray-700: #d4dee7;
+  --color-gray-800: #e6edf3;
+  --color-gray-900: #f2f6fa;
+  --color-gray-950: #fafcff;
+  --color-blue-50: #eaf5ff;
+  --color-blue-100: #ceeaff;
+  --color-blue-200: #a3d9ff;
+  --color-blue-300: #74c4ff;
+  --color-blue-400: #4dacff;
+  --color-blue-500: #3494f1;
+  --color-blue-600: #2979cc;
+  --color-blue-700: #25629f;
+  --color-emerald-50: #e5fbf1;
+  --color-emerald-100: #c1f4de;
+  --color-emerald-200: #86e8c1;
+  --color-emerald-300: #4fd5a4;
+  --color-emerald-400: #2fc18b;
+  --color-emerald-500: #21a873;
+  --color-emerald-600: #1a875e;
+  --color-emerald-700: #196c4f;
+  --color-amber-50: #fff8df;
+  --color-amber-100: #ffebae;
+  --color-amber-200: #ffdb72;
+  --color-amber-300: #f9c447;
+  --color-amber-400: #eaaa31;
+  --color-amber-500: #d18c20;
+  --color-amber-600: #ad6f17;
+  --color-red-400: #ff8a85;
+  --color-red-500: #ef6260;
+  --color-red-600: #d24747;
+  --color-orange-400: #ff9b68;
+  --color-orange-500: #f17b3c;
+  --color-orange-600: #cd5b27;
+}
+
+:root[data-skin="anime-sunset"] .min-h-screen.bg-gray-50 {
+  background-color: rgba(18, 15, 28, 0.38);
+  background-image:
+    linear-gradient(180deg, rgba(16, 19, 34, 0.15), rgba(16, 19, 34, 0.52) 58%, rgba(9, 13, 25, 0.87)),
+    url("/themes/twilight.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+:root[data-skin="anime-neon"] .min-h-screen.bg-gray-50 {
+  background-color: rgba(9, 12, 30, 0.48);
+  background-image:
+    linear-gradient(180deg, rgba(6, 9, 20, 0.08), rgba(6, 9, 20, 0.58) 64%, rgba(4, 7, 18, 0.9)),
+    url("/themes/neon.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+:root[data-skin="anime-forest"] .min-h-screen.bg-gray-50 {
+  background-color: rgba(18, 30, 30, 0.38);
+  background-image:
+    linear-gradient(180deg, rgba(12, 24, 24, 0.14), rgba(12, 24, 24, 0.5) 62%, rgba(6, 15, 15, 0.87)),
+    url("/themes/forest.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+:root[data-skin="anime-stars"] .min-h-screen.bg-gray-50 {
+  background-color: rgba(5, 14, 28, 0.4);
+  background-image:
+    linear-gradient(180deg, rgba(5, 12, 25, 0.12), rgba(5, 12, 25, 0.58) 68%, rgba(2, 7, 18, 0.9)),
+    url("/themes/stars.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+:root[data-skin="anime-sunset"] .bg-white,
+:root[data-skin="anime-neon"] .bg-white,
+:root[data-skin="anime-forest"] .bg-white,
+:root[data-skin="anime-stars"] .bg-white {
+  background-color: var(--skin-panel) !important;
+  border-color: rgba(167, 185, 211, 0.22) !important;
+  backdrop-filter: blur(22px) saturate(145%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 12px 34px rgba(0, 0, 0, 0.32) !important;
+}
+
+:root[data-skin="anime-sunset"] header.sticky.bg-white,
+:root[data-skin="anime-neon"] header.sticky.bg-white,
+:root[data-skin="anime-forest"] header.sticky.bg-white,
+:root[data-skin="anime-stars"] header.sticky.bg-white,
+:root[data-skin="anime-sunset"] header .flex.bg-white,
+:root[data-skin="anime-neon"] header .flex.bg-white,
+:root[data-skin="anime-forest"] header .flex.bg-white,
+:root[data-skin="anime-stars"] header .flex.bg-white {
+  background-color: rgba(8, 13, 25, 0.94) !important;
+  border-color: rgba(150, 171, 201, 0.26) !important;
+}
+
+:root[data-skin="anime-sunset"] .fixed > .bg-white,
+:root[data-skin="anime-neon"] .fixed > .bg-white,
+:root[data-skin="anime-forest"] .fixed > .bg-white,
+:root[data-skin="anime-stars"] .fixed > .bg-white,
+:root[data-skin="anime-sunset"] .absolute.bg-white,
+:root[data-skin="anime-neon"] .absolute.bg-white,
+:root[data-skin="anime-forest"] .absolute.bg-white,
+:root[data-skin="anime-stars"] .absolute.bg-white {
+  background-color: rgba(10, 15, 28, 0.98) !important;
+}
+
+:root[data-skin="anime-sunset"] button,
+:root[data-skin="anime-neon"] button,
+:root[data-skin="anime-forest"] button,
+:root[data-skin="anime-stars"] button {
+  border: 1px solid rgba(164, 184, 212, 0.3) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+
+:root[data-skin="anime-sunset"] button:hover:not(:disabled),
+:root[data-skin="anime-neon"] button:hover:not(:disabled),
+:root[data-skin="anime-forest"] button:hover:not(:disabled),
+:root[data-skin="anime-stars"] button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+:root[data-skin="anime-sunset"] input,
+:root[data-skin="anime-neon"] input,
+:root[data-skin="anime-forest"] input,
+:root[data-skin="anime-stars"] input,
+:root[data-skin="anime-sunset"] select,
+:root[data-skin="anime-neon"] select,
+:root[data-skin="anime-forest"] select,
+:root[data-skin="anime-stars"] select,
+:root[data-skin="anime-sunset"] textarea,
+:root[data-skin="anime-neon"] textarea,
+:root[data-skin="anime-forest"] textarea,
+:root[data-skin="anime-stars"] textarea {
+  border: 1px solid rgba(164, 184, 212, 0.3) !important;
+  background-color: rgba(10, 16, 30, 0.9) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 4px 14px rgba(0, 0, 0, 0.22) !important;
+}
+
+:root[data-skin="anime-sunset"] select option,
+:root[data-skin="anime-neon"] select option,
+:root[data-skin="anime-forest"] select option,
+:root[data-skin="anime-stars"] select option {
+  background-color: #101828;
+  color: #f2f6fa;
+}
+
+/* Compact density for desktop tool surfaces. */
+.p-5 {
+  padding: 1rem !important;
+}
+
+.px-6 {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+}
+
+.py-4 {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
+.pt-4 {
+  padding-top: 0.75rem !important;
+}
+
+.pb-8 {
+  padding-bottom: 1.5rem !important;
+}
+
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.5rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 0.75rem !important;
+}
+
+.gap-4 {
+  gap: 0.75rem !important;
+}
+
+.h-10 {
+  height: 2.25rem !important;
+}
+
+.h-10.w-10 {
+  width: 2.25rem !important;
+}
+
+:root[data-skin="graphite"] .bg-white,
+:root[data-skin="aurora"] .bg-white,
+:root[data-skin="cyberpunk"] .bg-white {
+  background-color: var(--skin-panel);
+}

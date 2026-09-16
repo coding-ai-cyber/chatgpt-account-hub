@@ -14,8 +14,8 @@
     "windows": [
       {
         "title": "Codex Switcher",
-        "width": 900,
-        "height": 700,
+        "width": 1120,
+        "height": 760,
         "minWidth": 600,
         "minHeight": 500
       }
@@ -34,7 +34,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": true,
+    "windows": {
+      "webviewInstallMode": {
+        "type": "offlineInstaller",
+        "silent": true
+      }
+    }
   },
   "plugins": {
     "updater": {

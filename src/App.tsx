@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAccounts } from "./hooks/useAccounts";
 import { useDesktopReopen } from "./hooks/useDesktopReopen";
 import { useCodexClosePreference } from "./hooks/useCodexClosePreference";
@@ -7,19 +6,25 @@ import { SettingsModal } from "./components/SettingsModal";
 import { finishForceClose, type DesktopReopenPreference } from "./lib/desktopReopen";
 import type { CodexClosePreference } from "./lib/codexClosePreference";
 import { useForceCloseCodexProcesses } from "./hooks/useForceCloseCodexProcesses";
-import { AccountCard, AddAccountModal, UpdateChecker } from "./components";
+import { AddAccountModal, UpdateChecker } from "./components";
 import type { AccountWithUsage, CodexProcessInfo, DockDisplayMode, UsageInfo } from "./types";
 import {
   exportFullBackupFile,
   importFullBackupFile,
   isTauriRuntime,
   invokeBackend,
+  openExternalUrl,
 } from "./lib/platform";
 import {
+  applySkin,
   applyTheme,
+  readStoredSkin,
   readStoredTheme,
+  SKIN_CHANGED_EVENT,
+  SKIN_STORAGE_KEY,
   THEME_CHANGED_EVENT,
   THEME_STORAGE_KEY,
+  type SkinId,
   type ThemeMode,
 } from "./lib/theme";
 import {
@@ -43,6 +48,19 @@ import {
   type AutoWarmupWindowKind,
 } from "./lib/autoWarmupPolicy";
 import { useLanguage } from "./lib/i18n";
+import { AppShell } from "./app/AppShell";
+import {
+  getNavItem,
+  readStoredPageId,
+  writeStoredPageId,
+  type PageId,
+} from "./app/navigation";
+import { TopToolbar, type ToolbarAction } from "./components/layout/TopToolbar";
+import { CurrentAccountPage } from "./pages/CurrentAccountPage";
+import { OtherAccountsPage, type AccountViewMode, type OtherAccountsSort } from "./pages/OtherAccountsPage";
+import { UsageStatsPage } from "./pages/UsageStatsPage";
+import { HelpPage } from "./pages/HelpPage";
+import { SettingsPage } from "./pages/SettingsPage";
 import "./App.css";
 
 const AUTO_WARMUP_CHECK_INTERVAL_MS = 30 * 1000;
@@ -51,6 +69,7 @@ const LIMIT_FULL_THRESHOLD = 99.5;
 const ACCOUNT_SEARCH_THRESHOLD = 8;
 const SWITCH_ACCOUNT_BLOCKED_EVENT = "switch-account-blocked";
 const CLOSE_BEHAVIOR_REQUESTED_EVENT = "close-behavior-requested";
+const CHATGPT_BROWSER_URL = "https://chatgpt.com/";
 interface SwitchAccountBlockedPayload {
   accountId?: string;
   error?: string;
@@ -66,10 +85,6 @@ type AutoWarmupLedger = Record<
     lastAutoWindowKind?: AutoWarmupWindowKind;
   }
 >;
-const appWindow = isTauriRuntime() ? getCurrentWindow() : null;
-const isMacOs =
-  typeof navigator !== "undefined" &&
-  /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent);
 
 function readStoredStringArray(key: string): string[] {
   if (typeof window === "undefined") return [];
@@ -232,27 +247,35 @@ function App() {
   const [timedWarmupTimes, setTimedWarmupTimes] = useState<string[]>(() =>
     readTimedWarmupTimes()
   );
-  const [isTimedWarmupOpen, setIsTimedWarmupOpen] = useState(false);
   const [timedWarmupRunning, setTimedWarmupRunning] = useState(false);
-  const [timedWarmupDraft, setTimedWarmupDraft] = useState("");
   const [maskedAccounts, setMaskedAccounts] = useState<Set<string>>(new Set());
   const [accountSearchQuery, setAccountSearchQuery] = useState("");
-  const [isAccountSearchOpen, setIsAccountSearchOpen] = useState(false);
   const isAccountSearchEnabled = accounts.length >= ACCOUNT_SEARCH_THRESHOLD;
-  const [otherAccountsSort, setOtherAccountsSort] = useState<
-    | "deadline_asc"
-    | "deadline_desc"
-    | "remaining_desc"
-    | "remaining_asc"
-    | "subscription_asc"
-    | "subscription_desc"
-  >("deadline_asc");
-  const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
-  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
+  const [otherAccountsSort, setOtherAccountsSort] = useState<OtherAccountsSort>("deadline_asc");
+  const [activePage, setActivePage] = useState<PageId>(readStoredPageId);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("codex-switcher-sidebar-collapsed") === "1";
+  });
+  const [accountView, setAccountView] = useState<AccountViewMode>(() => {
+    if (typeof window === "undefined") return "grid";
+    return window.localStorage.getItem("codex-switcher-account-view") === "list"
+      ? "list"
+      : "grid";
+  });
+  const [statsAccountId, setStatsAccountId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return window.localStorage.getItem("codex-switcher-stats-account");
+    } catch {
+      return null;
+    }
+  });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCompletingForceClose, setIsCompletingForceClose] = useState(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const forceCloseInFlightRef = useRef(false);
+  const openBrowserAfterSwitchRef = useRef(false);
 
   useEffect(() => {
     if (!isTauriRuntime()) return;
@@ -260,7 +283,7 @@ function App() {
     let unlisten: (() => void) | undefined;
     void import("@tauri-apps/api/event").then(async ({ listen }) => {
       const stop = await listen("desktop-reopen-settings-requested", () => {
-        setIsSettingsOpen(true);
+        setActivePage("settings");
       });
       if (disposed) stop();
       else unlisten = stop;
@@ -271,10 +294,8 @@ function App() {
     };
   }, []);
 
-  const actionsMenuRef = useRef<HTMLDivElement | null>(null);
-  const navMenuRef = useRef<HTMLDivElement | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>(readStoredTheme);
-  const [isWindowMaximized, setIsWindowMaximized] = useState(false);
+  const [skinId, setSkinId] = useState<SkinId>(readStoredSkin);
   const [closeBehaviorPromptOpen, setCloseBehaviorPromptOpen] = useState(false);
   const [closeBehaviorDontAskAgain, setCloseBehaviorDontAskAgain] = useState(false);
   const [isCompletingCloseBehavior, setIsCompletingCloseBehavior] = useState(false);
@@ -387,19 +408,6 @@ function App() {
     }
   }, [autoWarmupAccountIds]);
 
-  const handleTitlebarDrag = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!isTauriRuntime() || !appWindow || event.button !== 0) return;
-      void appWindow.startDragging();
-    },
-    []
-  );
-
-  const handleTitlebarDoubleClick = useCallback(() => {
-    if (!isTauriRuntime() || !appWindow) return;
-    void appWindow.toggleMaximize();
-  }, []);
-
   const toggleMask = (accountId: string) => {
     setMaskedAccounts((prev) => {
       const next = new Set(prev);
@@ -465,49 +473,60 @@ function App() {
   }, [loadMaskedAccountIds]);
 
   useEffect(() => {
-    if (!isActionsMenuOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!actionsMenuRef.current) return;
-      if (!actionsMenuRef.current.contains(event.target as Node)) {
-        setIsActionsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isActionsMenuOpen]);
+    writeStoredPageId(activePage);
+  }, [activePage]);
 
   useEffect(() => {
-    if (!isNavMenuOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!navMenuRef.current) return;
-      if (!navMenuRef.current.contains(event.target as Node)) {
-        setIsNavMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isNavMenuOpen]);
+    try {
+      window.localStorage.setItem(
+        "codex-switcher-sidebar-collapsed",
+        sidebarCollapsed ? "1" : "0"
+      );
+    } catch {
+      // Sidebar state is best effort.
+    }
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
-    if (!isTimedWarmupOpen) return;
+    try {
+      window.localStorage.setItem("codex-switcher-account-view", accountView);
+    } catch {
+      // View state is best effort.
+    }
+  }, [accountView]);
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!navMenuRef.current) return;
-      if (!navMenuRef.current.contains(event.target as Node)) {
-        setIsTimedWarmupOpen(false);
+  useEffect(() => {
+    const fallback =
+      accounts.find((account) => account.is_active)?.id ?? accounts[0]?.id ?? null;
+    const stillValid = statsAccountId
+      ? accounts.some((account) => account.id === statsAccountId)
+      : false;
+    const next = stillValid ? statsAccountId : fallback;
+    if (next !== statsAccountId) setStatsAccountId(next);
+  }, [accounts, statsAccountId]);
+
+  useEffect(() => {
+    try {
+      if (statsAccountId) {
+        window.localStorage.setItem("codex-switcher-stats-account", statsAccountId);
+      } else {
+        window.localStorage.removeItem("codex-switcher-stats-account");
       }
-    };
+    } catch {
+      // Stats selection is best effort.
+    }
+  }, [statsAccountId]);
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isTimedWarmupOpen]);
+  useEffect(() => {
+    if (skinId === "default") applyTheme(themeMode);
+    else document.documentElement.classList.remove("dark");
+  }, [skinId, themeMode]);
 
   useEffect(() => {
     applyTheme(themeMode);
+    if (skinId !== "default") {
+      document.documentElement.classList.remove("dark");
+    }
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
     } catch {
@@ -519,38 +538,24 @@ function App() {
         .then(({ emit }) => emit(THEME_CHANGED_EVENT, themeMode))
         .catch((err) => console.error("Failed to sync tray theme:", err));
     }
-  }, [themeMode]);
+  }, [themeMode, skinId]);
 
   useEffect(() => {
-    if (!isTauriRuntime() || !appWindow || isMacOs) return;
+    applySkin(skinId);
+    if (skinId === "default") applyTheme(themeMode);
+    else document.documentElement.classList.remove("dark");
+    try {
+      window.localStorage.setItem(SKIN_STORAGE_KEY, skinId);
+    } catch {
+      // Ignore storage errors; skin still works for current session.
+    }
 
-    let unlisten: (() => void) | undefined;
-
-    const syncMaximizedState = async () => {
-      try {
-        setIsWindowMaximized(await appWindow.isMaximized());
-      } catch (err) {
-        console.error("Failed to read window state:", err);
-      }
-    };
-
-    void syncMaximizedState();
-
-    appWindow
-      .onResized(() => {
-        void syncMaximizedState();
-      })
-      .then((fn) => {
-        unlisten = fn;
-      })
-      .catch((err) => {
-        console.error("Failed to watch window resize:", err);
-      });
-
-    return () => {
-      unlisten?.();
-    };
-  }, []);
+    if (isTauriRuntime()) {
+      void import("@tauri-apps/api/event")
+        .then(({ emit }) => emit(SKIN_CHANGED_EVENT, skinId))
+        .catch((err) => console.error("Failed to sync tray skin:", err));
+    }
+  }, [skinId, themeMode]);
 
   const handleSwitch = async (accountId: string) => {
     try {
@@ -581,10 +586,57 @@ function App() {
     }
   };
 
-  const handleDelete = async (accountId: string) => {
-    if (deleteConfirmId !== accountId) {
-      setDeleteConfirmId(accountId);
-      setTimeout(() => setDeleteConfirmId(null), 3000);
+  const handleOpenInBrowser = async (accountId: string) => {
+    try {
+      const activeId = accounts.find((account) => account.is_active)?.id;
+      if (activeId === accountId) {
+        await openExternalUrl(CHATGPT_BROWSER_URL);
+        showWarmupToast(t("openedInBrowser"));
+        return;
+      }
+
+      setSwitchingId(accountId);
+      const latestProcessInfo = await checkProcesses();
+      if (!latestProcessInfo) {
+        showWarmupToast(t("couldNotCheckRunningCodexProcesses"), true);
+        return;
+      }
+      if (!latestProcessInfo.can_switch) {
+        openBrowserAfterSwitchRef.current = true;
+        setPendingSwitchAccountId(accountId);
+        setForceCloseConfirmOpen(true);
+        return;
+      }
+
+      await switchAccount(accountId);
+      await openExternalUrl(CHATGPT_BROWSER_URL);
+      showWarmupToast(t("openedInBrowser"));
+    } catch (err) {
+      console.error("Failed to switch account and open browser:", err);
+      const activeId = accounts.find((account) => account.is_active)?.id;
+      if (activeId === accountId) {
+        showWarmupToast(t("openedInBrowserFailed", { message: formatWarmupError(err) }), true);
+        return;
+      }
+      const latestProcessInfo = await checkProcesses();
+      if (latestProcessInfo && !latestProcessInfo.can_switch) {
+        openBrowserAfterSwitchRef.current = true;
+        setPendingSwitchAccountId(accountId);
+        setForceCloseConfirmOpen(true);
+      } else {
+        showWarmupToast(t("openedInBrowserFailed", { message: formatWarmupError(err) }), true);
+      }
+    } finally {
+      setSwitchingId(null);
+    }
+  };
+
+  const handleDelete = async (accountId: string, confirmed = false) => {
+    if (!confirmed) {
+      if (deleteConfirmId !== accountId) {
+        setDeleteConfirmId(accountId);
+        setTimeout(() => setDeleteConfirmId(null), 3000);
+      }
       return;
     }
 
@@ -789,9 +841,19 @@ function App() {
         accountId ? async () => {
           setSwitchingId(accountId);
           await switchAccount(accountId);
-          showWarmupToast(t("switchedAccountAfterClosing", {
-            mode: codexClose.forceClose ? t("forceCloseAction") : t("gracefulCloseAction"),
-          }));
+          if (openBrowserAfterSwitchRef.current) {
+            try {
+              await openExternalUrl(CHATGPT_BROWSER_URL);
+              showWarmupToast(t("openedInBrowser"));
+            } catch (err) {
+              console.error("Failed to open browser after force close:", err);
+              showWarmupToast(t("openedInBrowserFailed", { message: formatWarmupError(err) }), true);
+            }
+          } else {
+            showWarmupToast(t("switchedAccountAfterClosing", {
+              mode: codexClose.forceClose ? t("forceCloseAction") : t("gracefulCloseAction"),
+            }));
+          }
         } : null,
         async (token) => {
           try {
@@ -816,6 +878,7 @@ function App() {
     } finally {
       setPendingSwitchAccountId(null);
       setSwitchingId(null);
+      openBrowserAfterSwitchRef.current = false;
       setIsCompletingForceClose(false);
       forceCloseInFlightRef.current = false;
       void checkProcesses();
@@ -931,13 +994,6 @@ function App() {
     },
     [t]
   );
-
-  const headerAutoWarmupLabel = useMemo(() => {
-    if (autoWarmupRunningIds.size > 0) return t("autoWarming");
-    return autoWarmupAllEnabled || autoWarmupAccountIds.size > 0
-      ? t("autoOn")
-      : t("autoOff");
-  }, [autoWarmupAccountIds.size, autoWarmupAllEnabled, autoWarmupRunningIds, t]);
 
   const timedWarmupTargetsReady = useMemo(
     () =>
@@ -1114,31 +1170,17 @@ function App() {
     runTimedWarmup,
   ]);
 
-  const handleAddTimedWarmupTime = useCallback(() => {
-    const normalized = normalizeTimedWarmupTimes([timedWarmupDraft]);
+  const handleAddTimedWarmupTime = useCallback((draft: string) => {
+    const normalized = normalizeTimedWarmupTimes([draft]);
     if (normalized.length === 0) return;
     setTimedWarmupTimes((prev) =>
       normalizeTimedWarmupTimes([...prev, normalized[0]])
     );
-    setTimedWarmupDraft("");
-  }, [timedWarmupDraft]);
+  }, []);
 
   const handleRemoveTimedWarmupTime = useCallback((time: string) => {
     setTimedWarmupTimes((prev) => prev.filter((entry) => entry !== time));
   }, []);
-
-  const timedWarmupLabel = useMemo(() => {
-    if (timedWarmupRunning) return t("timedWarming");
-    if (!timedWarmupEnabled || timedWarmupTimes.length === 0) return t("timedOff");
-
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const upcoming = timedWarmupTimes.find((time) => {
-      const [hours, minutes] = time.split(":").map(Number);
-      return hours * 60 + minutes > nowMinutes;
-    });
-    return t("timedAt", { message: upcoming ?? timedWarmupTimes[0] });
-  }, [timedWarmupEnabled, timedWarmupRunning, timedWarmupTimes, t]);
 
   const handleExportSlimText = async () => {
     setConfigModalMode("slim_export");
@@ -1160,14 +1202,6 @@ function App() {
     } finally {
       setIsExportingSlim(false);
     }
-  };
-
-  const openImportSlimTextModal = () => {
-    setConfigModalMode("slim_import");
-    setConfigModalError(null);
-    setConfigPayload("");
-    setConfigCopied(false);
-    setIsConfigModalOpen(true);
   };
 
   const handleImportSlimText = async () => {
@@ -1351,9 +1385,6 @@ function App() {
   const normalizedAccountSearchQuery = isAccountSearchEnabled
     ? accountSearchQuery.trim().toLowerCase()
     : "";
-  const hasMatchingActiveAccount =
-    activeAccount !== undefined &&
-    matchesAccountSearch(activeAccount, normalizedAccountSearchQuery);
   const visibleOtherAccounts = useMemo(
     () =>
       sortedOtherAccounts.filter((account) =>
@@ -1361,623 +1392,225 @@ function App() {
       ),
     [normalizedAccountSearchQuery, sortedOtherAccounts]
   );
-  const hasNoMatchingAccounts =
-    normalizedAccountSearchQuery.length > 0 &&
-    !hasMatchingActiveAccount &&
-    visibleOtherAccounts.length === 0;
 
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-        <div className="flex h-9 items-center bg-white px-3 dark:bg-gray-900">
-          <div
-            onMouseDown={handleTitlebarDrag}
-            onDoubleClick={handleTitlebarDoubleClick}
-            className={`h-full flex-1 select-none cursor-default ${isMacOs ? "ml-18 mr-2" : "mr-3"}`}
+  const handleRefreshAccount = async (accountId: string) => {
+    try {
+      await refreshSingleUsage(accountId, { refreshMetadata: true });
+      showWarmupToast(t("usageRefreshedSuccessfully"));
+    } catch (err) {
+      showWarmupToast(t("refreshFailed", { message: formatWarmupError(err) }), true);
+    }
+  };
+
+  const handleRename = async (accountId: string, name: string) => {
+    try {
+      await renameAccount(accountId, name);
+      showWarmupToast(t("accountRenamed"));
+    } catch (err) {
+      showWarmupToast(t("renameFailed", { message: formatWarmupError(err) }), true);
+      throw err;
+    }
+  };
+
+  const handleCheckForUpdates = () => {
+    window.dispatchEvent(new CustomEvent("codex-switcher-check-updates"));
+  };
+
+  const pageMeta = getNavItem(activePage);
+  const handleNavigatePage = (pageId: PageId) => setActivePage(pageId);
+  const handleWarmup = handleWarmupAccount;
+  const handleToggleMask = toggleMask;
+  const handleToggleAutoWarmup = toggleAutoWarmupAccount;
+  const handleToggleMaskAll = toggleMaskAll;
+  const handleOpenSlimImportModal = () => {
+    setConfigModalMode("slim_import");
+    setConfigPayload("");
+    setConfigModalError(null);
+    setIsConfigModalOpen(true);
+  };
+  const autoWarmupEnabledFor = (accountId: string) =>
+    autoWarmupAllEnabled || autoWarmupAccountIds.has(accountId);
+  const autoWarmupRunningFor = (accountId: string) =>
+    autoWarmupRunningIds.has(accountId);
+  const autoWarmupLabelFor = (accountId: string) => {
+    const account = accounts.find((item) => item.id === accountId);
+    return getAutoWarmupLabel(
+      account?.usage,
+      autoWarmupAllEnabled || autoWarmupAccountIds.has(accountId),
+      autoWarmupAllEnabled
+    );
+  };
+
+  const toolbarActions: ToolbarAction[] = [
+    {
+      label: t("searchAccounts"),
+      icon: "search",
+      onSelect: () => handleNavigatePage("other-accounts"),
+      disabled: !isAccountSearchEnabled,
+    },
+    {
+      label: t("exportSlimText"),
+      icon: "download",
+      onSelect: () => void handleExportSlimText(),
+      disabled: isExportingSlim,
+    },
+    {
+      label: t("importSlimText"),
+      icon: "upload",
+      onSelect: handleOpenSlimImportModal,
+      disabled: isImportingSlim,
+    },
+    {
+      label: t("exportFullEncryptedFile"),
+      icon: "download",
+      onSelect: () => void handleExportFullFile(),
+      disabled: isExportingFull,
+    },
+    {
+      label: t("importFullEncryptedFile"),
+      icon: "upload",
+      onSelect: () => void handleImportFullFile(),
+      disabled: isImportingFull,
+    },
+    {
+      label: t("timedWarmup"),
+      icon: "clock",
+      onSelect: () => handleNavigatePage("settings"),
+    },
+  ];
+  if (isTauriRuntime() && processInfo && !hasRunningProcesses) {
+    toolbarActions.unshift({
+      label: isOpeningCodex ? t("opening") : t("openCodexApp"),
+      icon: "external",
+      onSelect: () => void handleOpenCodexApp(),
+      disabled: isOpeningCodex,
+    });
+  }
+
+  const activePageContent = (() => {
+    if (activePage === "other-accounts") {
+      return (
+        <OtherAccountsPage
+          accounts={accounts}
+          visibleOtherAccounts={visibleOtherAccounts}
+          otherAccounts={otherAccounts}
+          searchQuery={accountSearchQuery}
+          onSearchChange={setAccountSearchQuery}
+          searchEnabled={isAccountSearchEnabled}
+          sort={otherAccountsSort}
+          onSortChange={setOtherAccountsSort}
+          view={accountView}
+          onViewChange={setAccountView}
+          masked={maskedAccounts}
+          switchingId={switchingId}
+          processRunning={Boolean(hasRunningProcesses)}
+          warmingUpId={warmingUpId}
+          warmingAll={isWarmingAll}
+          autoWarmupEnabled={autoWarmupEnabledFor}
+          autoWarmupManagedByAll={autoWarmupAllEnabled}
+          autoWarmupLabel={autoWarmupLabelFor}
+          autoWarmupRunning={autoWarmupRunningFor}
+          onSwitch={(accountId) => void handleSwitch(accountId)}
+          onOpenInBrowser={(accountId) => void handleOpenInBrowser(accountId)}
+          onRefresh={(accountId) => handleRefreshAccount(accountId)}
+          onWarmup={(accountId, name) => handleWarmup(accountId, name)}
+          onRename={(accountId, name) => handleRename(accountId, name)}
+          onRemove={(accountId) => void handleDelete(accountId, true)}
+          onToggleMask={handleToggleMask}
+          onToggleAutoWarmup={(accountId) => void handleToggleAutoWarmup(accountId)}
+          onViewStats={(accountId) => {
+            setStatsAccountId(accountId);
+            handleNavigatePage("usage-stats");
+          }}
+        />
+      );
+    }
+    if (activePage === "usage-stats") {
+      return (
+        <UsageStatsPage
+          accounts={accounts}
+          selectedAccountId={statsAccountId}
+          onSelectedAccountChange={setStatsAccountId}
+        />
+      );
+    }
+    if (activePage === "help") {
+      return <HelpPage onCheckUpdates={handleCheckForUpdates} />;
+    }
+    if (activePage === "settings") {
+      return (
+        <SettingsPage
+          skin={skinId}
+          themeMode={themeMode}
+          onSkinChange={setSkinId}
+          onThemeModeChange={setThemeMode}
+          closePreference={codexClose.preference}
+          onClosePreferenceChange={saveCodexClosePreference}
+          reopenPreference={desktopReopen.preference}
+          onReopenPreferenceChange={saveDesktopReopenPreference}
+          autoWarmupAllEnabled={autoWarmupAllEnabled}
+          onAutoWarmupAllEnabledChange={setAutoWarmupAllEnabled}
+          timedWarmupEnabled={timedWarmupEnabled}
+          onTimedWarmupEnabledChange={setTimedWarmupEnabled}
+          timedWarmupTimes={timedWarmupTimes}
+          onAddTimedWarmupTime={handleAddTimedWarmupTime}
+          onRemoveTimedWarmupTime={handleRemoveTimedWarmupTime}
+        />
+      );
+    }
+    return (
+      <CurrentAccountPage
+        loading={loading}
+        error={error}
+        accounts={accounts}
+        activeAccount={activeAccount}
+        masked={maskedAccounts}
+        onAddAccount={() => setIsAddModalOpen(true)}
+        onImportAccounts={handleOpenSlimImportModal}
+        onRetry={() => void loadAccounts()}
+        onOpenInBrowser={(accountId) => void handleOpenInBrowser(accountId)}
+        onRefresh={(accountId) => handleRefreshAccount(accountId)}
+        onWarmup={(accountId, name) => void handleWarmup(accountId, name)}
+        onDelete={(accountId) => void handleDelete(accountId)}
+        onToggleMask={handleToggleMask}
+        onToggleAutoWarmup={(accountId) => void handleToggleAutoWarmup(accountId)}
+        onViewFullStats={() => {
+          setStatsAccountId(activeAccount?.id ?? null);
+          handleNavigatePage("usage-stats");
+        }}
+      />
+    );
+  })();
+
+return (
+    <div className="h-full">
+      <AppShell
+        activePage={activePage}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
+        onNavigate={handleNavigatePage}
+        activeAccount={activeAccount}
+        masked={allMasked}
+        toolbar={
+          <TopToolbar
+            title={t(pageMeta.labelKey)}
+            description={t(pageMeta.descriptionKey)}
+            processInfo={processInfo}
+            allMasked={allMasked}
+            refreshing={isRefreshing}
+            warmingAll={isWarmingAll}
+            accountsCount={accounts.length}
+            onToggleMaskAll={handleToggleMaskAll}
+            onRefresh={() => void handleRefresh()}
+            onWarmupAll={() => void handleWarmupAll()}
+            onAddAccount={() => setIsAddModalOpen(true)}
+            actions={toolbarActions}
           />
-          {!isMacOs && (
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => {
-                  void appWindow?.minimize();
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                title={t("minimize")}
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M5 12h14" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-              <button
-                onClick={() => {
-                  void appWindow?.toggleMaximize();
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                title={isWindowMaximized ? t("restore") : t("maximize")}
-              >
-                {isWindowMaximized ? (
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M9 9h10v10H9z" strokeWidth="2" />
-                    <path d="M5 15V5h10" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                ) : (
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="5" y="5" width="14" height="14" strokeWidth="2" />
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  void appWindow?.close();
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-500 hover:text-white dark:text-gray-400 dark:hover:bg-red-500 dark:hover:text-white"
-                title={t("close")}
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M6 6l12 12M18 6L6 18" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
+        }
+      >
+        {activePageContent}
+      </AppShell>
 
-        <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_max-content] md:items-center md:gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-                    Codex Switcher
-                  </h1>
-                  {processInfo && (
-                    <div className="inline-flex items-center gap-1">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs border ${hasRunningProcesses
-                            ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700"
-                            : "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700"
-                          }`}
-                      >
-                        <span
-                          className={`inline-block w-1.5 h-1.5 rounded-full ${hasRunningProcesses ? "bg-amber-500" : "bg-green-500"
-                            }`}
-                        ></span>
-                        <span>
-                          {hasRunningProcesses
-                            ? t("codexProcessesRunning", { count: processInfo.count })
-                            : t("codexProcessesRunning", { count: 0 })}
-                        </span>
-                      </span>
-                      {hasRunningProcesses && (
-                        <button
-                          onClick={() => {
-                            setPendingSwitchAccountId(null);
-                            setForceCloseConfirmOpen(true);
-                          }}
-                          disabled={isForceClosingCodex}
-                          className="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
-                          title={t("closeRunningCodexProcesses")}
-                        >
-                          {t("close")}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  {isTauriRuntime() && processInfo && !hasRunningProcesses && (
-                    <button
-                      onClick={handleOpenCodexApp}
-                      disabled={isOpeningCodex || isCompletingForceClose || switchingId !== null}
-                      className="inline-flex items-center rounded-md border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30"
-                      title={t("openCodexApp")}
-                    >
-                      {isOpeningCodex ? t("opening") : t("openCodexApp")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 shrink-0 md:ml-4 md:w-max md:flex-nowrap md:justify-end">
-              <button
-                onClick={toggleMaskAll}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 shrink-0"
-                title={allMasked ? t("showAllAccountNamesAndEmails") : t("hideAllAccountNamesAndEmails")}
-              >
-                {allMasked ? (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                    />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 shrink-0"
-                title={isRefreshing ? t("refreshingAllUsage") : t("refreshAllUsage")}
-              >
-                <span className={isRefreshing ? "animate-spin inline-block" : ""}>↻</span>
-              </button>
-              <button
-                onClick={() => void handleWarmupAll()}
-                disabled={isWarmingAll || accounts.length === 0}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors disabled:opacity-50 shrink-0 ${
-                  isWarmingAll
-                    ? "bg-amber-100 text-amber-500 dark:bg-amber-900/30 dark:text-amber-300"
-                    : "bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40"
-                }`}
-                title={isWarmingAll ? t("warmingUpAllAccounts") : t("warmUpAllAccounts")}
-              >
-                <span className={isWarmingAll ? "animate-pulse" : ""}>⚡</span>
-              </button>
-              {isAccountSearchEnabled && (
-                <button
-                  onClick={() => {
-                    if (isAccountSearchOpen) {
-                      setAccountSearchQuery("");
-                    }
-                    setIsAccountSearchOpen((prev) => !prev);
-                  }}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors shrink-0 ${
-                    isAccountSearchOpen
-                      ? "bg-gray-900 text-white hover:bg-gray-800 dark:bg-black dark:text-white dark:hover:bg-neutral-900"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                  }`}
-                  title={isAccountSearchOpen ? t("hideAccountSearch") : t("searchAccounts")}
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-                  </svg>
-                </button>
-              )}
-
-              <div className="relative" ref={navMenuRef}>
-                <button
-                  onClick={() => {
-                    setIsTimedWarmupOpen(false);
-                    setIsNavMenuOpen((prev) => !prev);
-                  }}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors shrink-0 ${
-                    isNavMenuOpen
-                      ? "bg-gray-900 text-white hover:bg-gray-800 dark:bg-black dark:text-white dark:hover:bg-neutral-900"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                  }`}
-                  title={t("menu")}
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="5" r="1.6" />
-                    <circle cx="12" cy="12" r="1.6" />
-                    <circle cx="12" cy="19" r="1.6" />
-                  </svg>
-                </button>
-                {isNavMenuOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-2 text-gray-700 shadow-xl dark:border-neutral-800 dark:bg-black dark:text-white">
-                    <button
-                      onClick={() => {
-                        setIsNavMenuOpen(false);
-                        setIsSettingsOpen(true);
-                      }}
-                      className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      {t("settings")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsNavMenuOpen(false);
-                        setAutoWarmupAllEnabled((prev) => !prev);
-                      }}
-                      disabled={accounts.length === 0}
-                      className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      <span>{t("autoWarmUp")}</span>
-                      <span
-                        className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${
-                          autoWarmupAllEnabled
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-                        }`}
-                      >
-                        {headerAutoWarmupLabel}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsNavMenuOpen(false);
-                        setIsTimedWarmupOpen((prev) => !prev);
-                      }}
-                      className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      <span>{t("timer")}</span>
-                      <span
-                        className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${
-                          timedWarmupEnabled
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-                        }`}
-                      >
-                        {timedWarmupLabel}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsNavMenuOpen(false);
-                        setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
-                      }}
-                      className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      <span>{t("appearance")}</span>
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500">
-                        {themeMode === "dark" ? `☾ ${t("dark")}` : `☀ ${t("light")}`}
-                      </span>
-                    </button>
-                  </div>
-                )}
-                {isTimedWarmupOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-64 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-                    <label className="flex items-center justify-between text-sm font-medium text-gray-800 dark:text-gray-100">
-                      <span>{t("timedWarmup")}</span>
-                      <input
-                        type="checkbox"
-                        checked={timedWarmupEnabled}
-                        onChange={(e) => setTimedWarmupEnabled(e.target.checked)}
-                        className="h-4 w-4 accent-emerald-600"
-                      />
-                    </label>
-                    <div className="mt-3 space-y-1">
-                      {timedWarmupTimes.length === 0 ? (
-                        <p className="text-xs italic text-gray-400 dark:text-gray-500">
-                          {t("noTimesAdded")}
-                        </p>
-                      ) : (
-                        timedWarmupTimes.map((time) => (
-                          <div
-                            key={time}
-                            className="flex items-center justify-between rounded-md bg-gray-50 px-2 py-1 text-sm dark:bg-gray-800"
-                          >
-                            <span className="font-mono text-gray-800 dark:text-gray-100">
-                              {time}
-                            </span>
-                            <button
-                              onClick={() => handleRemoveTimedWarmupTime(time)}
-                              className="text-gray-400 transition-colors hover:text-red-500"
-                              title={t("removeTime", { time })}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    <div className="mt-3 flex items-center gap-2">
-                      <input
-                        type="time"
-                        value={timedWarmupDraft}
-                        onChange={(e) => setTimedWarmupDraft(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleAddTimedWarmupTime();
-                        }}
-                        className="h-8 flex-1 rounded-md border border-gray-300 bg-white px-2 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                      />
-                      <button
-                        onClick={handleAddTimedWarmupTime}
-                        disabled={!timedWarmupDraft}
-                        className="h-8 rounded-md bg-gray-900 px-3 text-xs font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50 dark:bg-black dark:hover:bg-neutral-900"
-                      >
-                        {t("add")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="relative" ref={actionsMenuRef}>
-                <button
-                  onClick={() => setIsActionsMenuOpen((prev) => !prev)}
-                  className="h-10 px-4 py-2 text-sm font-medium rounded-lg bg-gray-900 text-white transition-colors hover:bg-gray-800 dark:bg-black dark:hover:bg-neutral-900 shrink-0 whitespace-nowrap"
-                >
-                  {t("account")} ▾
-                </button>
-                {isActionsMenuOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-2 text-gray-700 shadow-xl dark:border-neutral-800 dark:bg-black dark:text-white">
-                    <button
-                      onClick={() => {
-                        setIsActionsMenuOpen(false);
-                        setIsAddModalOpen(true);
-                      }}
-                      className="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      + {t("addAccount")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsActionsMenuOpen(false);
-                        void handleExportSlimText();
-                      }}
-                      disabled={isExportingSlim}
-                      className="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      {isExportingSlim ? t("exporting") : t("exportSlimText")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsActionsMenuOpen(false);
-                        openImportSlimTextModal();
-                      }}
-                      disabled={isImportingSlim}
-                      className="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      {isImportingSlim ? t("importing") : t("importSlimText")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsActionsMenuOpen(false);
-                        void handleExportFullFile();
-                      }}
-                      disabled={isExportingFull}
-                      className="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      {isExportingFull ? t("exporting") : t("exportFullEncryptedFile")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsActionsMenuOpen(false);
-                        void handleImportFullFile();
-                      }}
-                      disabled={isImportingFull}
-                      className="w-full rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-white dark:hover:bg-neutral-900"
-                    >
-                      {isImportingFull ? t("importing") : t("importFullEncryptedFile")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-6 pt-4 pb-8">
-        {loading && accounts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin h-10 w-10 border-2 border-gray-900 dark:border-gray-100 border-t-transparent rounded-full mb-4"></div>
-            <p className="text-gray-500 dark:text-gray-400">{t("loadingAccounts")}</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <div className="text-red-600 dark:text-red-300 mb-2">{t("failedToLoadAccounts")}</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{error}</p>
-          </div>
-        ) : accounts.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="h-16 w-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl">👤</span>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              {t("noAccountsYet")}
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              {t("addFirstAccount")}
-            </p>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="px-6 py-3 text-sm font-medium rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 text-white dark:text-gray-900 transition-colors"
-            >
-              {t("addAccount")}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {hasNoMatchingAccounts && (
-              <div className="rounded-2xl border border-dashed border-gray-300 px-6 py-12 text-center dark:border-gray-700">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                  {t("noMatchingAccounts")}
-                </h2>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {t("tryDifferentAccount")}
-                </p>
-              </div>
-            )}
-
-            {isAccountSearchEnabled && isAccountSearchOpen && (
-              <div className="relative w-full">
-                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-gray-500">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3.5-3.5" strokeLinecap="round" />
-                  </svg>
-                </span>
-                <input
-                  type="search"
-                  value={accountSearchQuery}
-                  onChange={(event) => setAccountSearchQuery(event.target.value)}
-                  placeholder={t("searchAccountsByNameOrEmail")}
-                  aria-label={t("searchAccounts")}
-                  autoFocus
-                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-gray-600 dark:focus:ring-gray-800"
-                />
-                {accountSearchQuery.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setAccountSearchQuery("")}
-                    aria-label={t("clearAccountSearch")}
-                    className="absolute inset-y-0 right-2 flex items-center px-2 text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200"
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      aria-hidden="true"
-                    >
-                      <path d="m8 8 8 8M16 8l-8 8" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Active Account */}
-            {activeAccount &&
-              matchesAccountSearch(activeAccount, normalizedAccountSearchQuery) && (
-                <section>
-                  <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                    {t("activeAccount")}
-                  </h2>
-                  <AccountCard
-                    account={activeAccount}
-                    onSwitch={() => { }}
-                    onWarmup={() =>
-                      handleWarmupAccount(activeAccount.id, activeAccount.name)
-                    }
-                    onDelete={() => handleDelete(activeAccount.id)}
-                    onRefresh={() =>
-                      refreshSingleUsage(activeAccount.id, { refreshMetadata: true })
-                    }
-                    onRename={(newName) => renameAccount(activeAccount.id, newName)}
-                    switching={switchingId === activeAccount.id}
-                    switchDisabled={switchingId !== null || isForceClosingCodex}
-                    codexRunning={hasRunningProcesses ?? false}
-                    warmingUp={
-                      isWarmingAll ||
-                      warmingUpId === activeAccount.id ||
-                      autoWarmupRunningIds.has(activeAccount.id)
-                    }
-                    masked={maskedAccounts.has(activeAccount.id)}
-                    onToggleMask={() => toggleMask(activeAccount.id)}
-                    autoWarmupEnabled={
-                      autoWarmupAllEnabled || autoWarmupAccountIds.has(activeAccount.id)
-                    }
-                    autoWarmupManagedByAll={autoWarmupAllEnabled}
-                    autoWarmupLabel={getAutoWarmupLabel(
-                      activeAccount.usage,
-                      autoWarmupAllEnabled || autoWarmupAccountIds.has(activeAccount.id),
-                      autoWarmupRunningIds.has(activeAccount.id)
-                    )}
-                    onToggleAutoWarmup={() => toggleAutoWarmupAccount(activeAccount.id)}
-                  />
-                </section>
-              )}
-
-            {/* Other Accounts */}
-            {visibleOtherAccounts.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between gap-3 mb-4">
-                  <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {normalizedAccountSearchQuery
-                      ? t("otherAccountsFilteredCount", {
-                          visible: visibleOtherAccounts.length,
-                          total: otherAccounts.length,
-                        })
-                      : t("otherAccountsCount", { count: otherAccounts.length })}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="other-accounts-sort" className="text-xs text-gray-500 dark:text-gray-400">
-                      {t("sort")}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="other-accounts-sort"
-                        value={otherAccountsSort}
-                        onChange={(e) =>
-                          setOtherAccountsSort(
-                            e.target.value as
-                              | "deadline_asc"
-                              | "deadline_desc"
-                              | "remaining_desc"
-                              | "remaining_asc"
-                              | "subscription_asc"
-                              | "subscription_desc"
-                          )
-                        }
-                        className="appearance-none font-sans text-xs sm:text-sm font-medium pl-3 pr-9 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-600 hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:border-gray-400 dark:focus:border-gray-600 transition-all"
-                      >
-                        <option value="deadline_asc">{t("resetEarliestToLatest")}</option>
-                        <option value="deadline_desc">{t("resetLatestToEarliest")}</option>
-                        <option value="remaining_desc">
-                          {t("remainingHighestToLowest")}
-                        </option>
-                        <option value="remaining_asc">
-                          {t("remainingLowestToHighest")}
-                        </option>
-                        <option value="subscription_asc">
-                          {t("expiryEarliestToLatest")}
-                        </option>
-                        <option value="subscription_desc">
-                          {t("expiryLatestToEarliest")}
-                        </option>
-                      </select>
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400">
-                        <svg
-                          className="h-4 w-4"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M6 8l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {visibleOtherAccounts.map((account) => (
-                    <AccountCard
-                      key={account.id}
-                      account={account}
-                      onSwitch={() => handleSwitch(account.id)}
-                      onWarmup={() => handleWarmupAccount(account.id, account.name)}
-                      onDelete={() => handleDelete(account.id)}
-                      onRefresh={() =>
-                        refreshSingleUsage(account.id, { refreshMetadata: true })
-                      }
-                      onRename={(newName) => renameAccount(account.id, newName)}
-                      switching={switchingId === account.id}
-                      switchDisabled={switchingId !== null || isForceClosingCodex}
-                      codexRunning={hasRunningProcesses ?? false}
-                      warmingUp={
-                        isWarmingAll ||
-                        warmingUpId === account.id ||
-                        autoWarmupRunningIds.has(account.id)
-                      }
-                      masked={maskedAccounts.has(account.id)}
-                      onToggleMask={() => toggleMask(account.id)}
-                      autoWarmupEnabled={
-                        autoWarmupAllEnabled || autoWarmupAccountIds.has(account.id)
-                      }
-                      autoWarmupManagedByAll={autoWarmupAllEnabled}
-                      autoWarmupLabel={getAutoWarmupLabel(
-                        account.usage,
-                        autoWarmupAllEnabled || autoWarmupAccountIds.has(account.id),
-                        autoWarmupRunningIds.has(account.id)
-                      )}
-                      onToggleAutoWarmup={() => toggleAutoWarmupAccount(account.id)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-      </main>
 
       {/* Refresh Success Toast */}
       {refreshSuccess && (
@@ -2012,6 +1645,8 @@ function App() {
           onReopenPreferenceChange={saveDesktopReopenPreference}
           closePreference={codexClose.preference}
           onClosePreferenceChange={saveCodexClosePreference}
+          skin={skinId}
+          onSkinChange={setSkinId}
           onClose={() => setIsSettingsOpen(false)}
         />
       )}
