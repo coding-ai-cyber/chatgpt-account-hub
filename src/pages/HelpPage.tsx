@@ -1,10 +1,8 @@
 import type { TranslationKey } from "../lib/i18n";
 import { useLanguage } from "../lib/i18n";
 import { openExternalUrl } from "../lib/platform";
+import { PROJECT_DOCS_URL, PROJECT_ISSUES_URL } from "../lib/links";
 import { Icon } from "../components/layout/Icon";
-
-const ONLINE_DOCS_URL = "https://github.com/Lampese/codex-switcher#readme";
-const ISSUES_URL = "https://github.com/Lampese/codex-switcher/issues";
 
 interface HelpSection {
   titleKey: TranslationKey;
@@ -65,7 +63,7 @@ export function HelpPage({ onCheckUpdates }: HelpPageProps) {
           <button
             type="button"
             className="app-btn flex items-center justify-center gap-2 px-3 py-2.5 text-sm"
-            onClick={() => void openExternalUrl(ONLINE_DOCS_URL)}
+            onClick={() => void openExternalUrl(PROJECT_DOCS_URL)}
           >
             <Icon name="external" size={16} />
             {t("onlineDocs")}
@@ -73,7 +71,7 @@ export function HelpPage({ onCheckUpdates }: HelpPageProps) {
           <button
             type="button"
             className="app-btn flex items-center justify-center gap-2 px-3 py-2.5 text-sm"
-            onClick={() => void openExternalUrl(ISSUES_URL)}
+            onClick={() => void openExternalUrl(PROJECT_ISSUES_URL)}
           >
             <Icon name="warning" size={16} />
             {t("reportIssue")}

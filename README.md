@@ -35,7 +35,7 @@
 
 The easiest way to install Codex Switcher is from the latest GitHub release:
 
-[Download the latest release](https://github.com/Lampese/codex-switcher/releases/latest)
+[Download the latest release](https://github.com/coding-ai-cyber/codex_switch/releases/latest)
 
 Choose the file for your platform:
 
@@ -70,8 +70,8 @@ from inside the app.
 
 ```bash
 # Clone the repository
-git clone https://github.com/Lampese/codex-switcher.git
-cd codex-switcher
+git clone https://github.com/coding-ai-cyber/codex_switch.git
+cd codex_switch
 
 # Install dependencies
 pnpm install
