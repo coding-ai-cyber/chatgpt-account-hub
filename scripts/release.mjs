@@ -139,12 +139,12 @@ console.log(`Created commit and tag for v${nextVersion}.`);
 
 if (shouldPush) {
   const branch = capture("git", ["branch", "--show-current"]);
-  run("git", ["push", "origin", branch]);
-  run("git", ["push", "origin", `v${nextVersion}`]);
+  run("git", ["push", "github", branch]);
+  run("git", ["push", "github", `v${nextVersion}`]);
   console.log(`Pushed ${branch} and v${nextVersion}.`);
 } else {
   const branch = capture("git", ["branch", "--show-current"]);
   console.log("Push skipped. Run these when ready:");
-  console.log(`git push origin ${branch}`);
-  console.log(`git push origin v${nextVersion}`);
+  console.log(`git push github ${branch}`);
+  console.log(`git push github v${nextVersion}`);
 }
