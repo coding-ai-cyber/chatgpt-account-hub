@@ -1,5 +1,6 @@
 import type { CodexProcessInfo } from "../../types";
 import { useLanguage } from "../../lib/i18n";
+import { useDismissibleDetails } from "../../hooks/useDismissibleDetails";
 import { Icon, type IconName } from "./Icon";
 
 export interface ToolbarAction {
@@ -21,6 +22,8 @@ interface TopToolbarProps {
   onRefresh: () => void;
   onWarmupAll: () => void;
   onAddAccount: () => void;
+  onCloseCodex?: () => void;
+  closingCodex?: boolean;
   actions: ToolbarAction[];
   onOpenNavigation?: () => void;
 }
@@ -37,11 +40,14 @@ export function TopToolbar({
   onRefresh,
   onWarmupAll,
   onAddAccount,
+  onCloseCodex,
+  closingCodex = false,
   actions,
   onOpenNavigation,
 }: TopToolbarProps) {
   const { t } = useLanguage();
   const hasRunningProcesses = Boolean(processInfo && processInfo.count > 0);
+  const moreMenu = useDismissibleDetails();
 
   return (
     <header className="app-toolbar app-toolbar-bg">
@@ -79,6 +85,20 @@ export function TopToolbar({
               : t("codexProcessesRunning", { count: 0 })}
           </span>
         </span>
+
+        {hasRunningProcesses && onCloseCodex && (
+          <button
+            type="button"
+            className="app-btn app-btn-soft-danger px-2.5 py-1.5 text-xs"
+            onClick={onCloseCodex}
+            disabled={closingCodex}
+            aria-label={t("closeCodex")}
+            title={t("closeRunningCodexProcesses")}
+          >
+            <Icon name="close" size={14} />
+            <span className="app-toolbar-status-label">{t("closeCodex")}</span>
+          </button>
+        )}
 
         <button
           type="button"
@@ -124,12 +144,12 @@ export function TopToolbar({
         </button>
 
         {actions.length > 0 && (
-          <details className="relative" onToggle={(event) => {
+          <details ref={moreMenu.detailsRef} className="relative" onToggle={(event) => {
             if (event.currentTarget.open) {
               document.dispatchEvent(new CustomEvent("app-more-menu-opened"));
             }
           }}>
-            <summary className="app-icon-button list-none cursor-pointer" aria-label={t("actionsMenu")} title={t("actionsMenu")}>
+            <summary role="button" className="app-icon-button list-none cursor-pointer" aria-label={t("actionsMenu")} title={t("actionsMenu")}>
               <Icon name="more" size={18} />
             </summary>
             <div className="absolute right-0 top-full z-40 mt-2 w-60 overflow-hidden app-surface-elevated p-1.5">
@@ -139,7 +159,7 @@ export function TopToolbar({
                   type="button"
                   className="app-menu-item flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm"
                   disabled={action.disabled}
-                  onClick={action.onSelect}
+                  onClick={() => moreMenu.select(action.onSelect)}
                 >
                   <Icon name={action.icon} size={16} className="shrink-0 app-text-muted" />
                   <span className="min-w-0 flex-1 truncate">{action.label}</span>

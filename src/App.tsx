@@ -61,12 +61,20 @@ import { OtherAccountsPage, type AccountViewMode, type OtherAccountsSort } from 
 import { UsageStatsPage } from "./pages/UsageStatsPage";
 import { HelpPage } from "./pages/HelpPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import {
+  beginAccountWarmup,
+  finishAccountWarmup,
+  getCodexToolbarMode,
+  hasSearchableAccounts,
+  normalizeAccountSearchQuery,
+  reconcileStatsAccountId,
+  shouldConfirmAccountDeletion,
+} from "./lib/appState";
 import "./App.css";
 
 const AUTO_WARMUP_CHECK_INTERVAL_MS = 30 * 1000;
 const AUTO_WARMUP_RETRY_BACKOFF_MS = 60 * 1000;
 const LIMIT_FULL_THRESHOLD = 99.5;
-const ACCOUNT_SEARCH_THRESHOLD = 8;
 const SWITCH_ACCOUNT_BLOCKED_EVENT = "switch-account-blocked";
 const CLOSE_BEHAVIOR_REQUESTED_EVENT = "close-behavior-requested";
 const CHATGPT_BROWSER_URL = "https://chatgpt.com/";
@@ -250,7 +258,7 @@ function App() {
   const [timedWarmupRunning, setTimedWarmupRunning] = useState(false);
   const [maskedAccounts, setMaskedAccounts] = useState<Set<string>>(new Set());
   const [accountSearchQuery, setAccountSearchQuery] = useState("");
-  const isAccountSearchEnabled = accounts.length >= ACCOUNT_SEARCH_THRESHOLD;
+  const isAccountSearchEnabled = hasSearchableAccounts(accounts);
   const [otherAccountsSort, setOtherAccountsSort] = useState<OtherAccountsSort>("deadline_asc");
   const [activePage, setActivePage] = useState<PageId>(readStoredPageId);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -276,6 +284,7 @@ function App() {
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const forceCloseInFlightRef = useRef(false);
   const openBrowserAfterSwitchRef = useRef(false);
+  const manualWarmupInFlightRef = useRef(new Set<string>());
 
   useEffect(() => {
     if (!isTauriRuntime()) return;
@@ -496,14 +505,9 @@ function App() {
   }, [accountView]);
 
   useEffect(() => {
-    const fallback =
-      accounts.find((account) => account.is_active)?.id ?? accounts[0]?.id ?? null;
-    const stillValid = statsAccountId
-      ? accounts.some((account) => account.id === statsAccountId)
-      : false;
-    const next = stillValid ? statsAccountId : fallback;
+    const next = reconcileStatsAccountId(accounts, statsAccountId, loading);
     if (next !== statsAccountId) setStatsAccountId(next);
-  }, [accounts, statsAccountId]);
+  }, [accounts, loading, statsAccountId]);
 
   useEffect(() => {
     try {
@@ -886,6 +890,8 @@ function App() {
   };
 
   const handleWarmupAccount = async (accountId: string, accountName: string) => {
+    if (isWarmingAll || autoWarmupRunningIdsRef.current.has(accountId)) return;
+    if (!beginAccountWarmup(manualWarmupInFlightRef.current, accountId)) return;
     try {
       setWarmingUpId(accountId);
       await warmupAccount(accountId);
@@ -898,6 +904,7 @@ function App() {
         true
       );
     } finally {
+      finishAccountWarmup(manualWarmupInFlightRef.current, accountId);
       setWarmingUpId(null);
     }
   };
@@ -1382,9 +1389,7 @@ function App() {
     });
   }, [otherAccounts, otherAccountsSort]);
 
-  const normalizedAccountSearchQuery = isAccountSearchEnabled
-    ? accountSearchQuery.trim().toLowerCase()
-    : "";
+  const normalizedAccountSearchQuery = normalizeAccountSearchQuery(accountSearchQuery);
   const visibleOtherAccounts = useMemo(
     () =>
       sortedOtherAccounts.filter((account) =>
@@ -1437,7 +1442,7 @@ function App() {
     return getAutoWarmupLabel(
       account?.usage,
       autoWarmupAllEnabled || autoWarmupAccountIds.has(accountId),
-      autoWarmupAllEnabled
+      autoWarmupRunningIds.has(accountId)
     );
   };
 
@@ -1478,7 +1483,8 @@ function App() {
       onSelect: () => handleNavigatePage("settings"),
     },
   ];
-  if (isTauriRuntime() && processInfo && !hasRunningProcesses) {
+  const codexToolbarMode = getCodexToolbarMode(processInfo, isTauriRuntime());
+  if (codexToolbarMode === "open") {
     toolbarActions.unshift({
       label: isOpeningCodex ? t("opening") : t("openCodexApp"),
       icon: "external",
@@ -1531,6 +1537,7 @@ function App() {
           accounts={accounts}
           selectedAccountId={statsAccountId}
           onSelectedAccountChange={setStatsAccountId}
+          masked={maskedAccounts}
         />
       );
     }
@@ -1571,7 +1578,18 @@ function App() {
         onOpenInBrowser={(accountId) => void handleOpenInBrowser(accountId)}
         onRefresh={(accountId) => handleRefreshAccount(accountId)}
         onWarmup={(accountId, name) => void handleWarmup(accountId, name)}
-        onDelete={(accountId) => void handleDelete(accountId)}
+        warmingUpId={warmingUpId}
+        warmingAll={isWarmingAll}
+        autoWarmupRunning={autoWarmupRunningFor}
+        autoWarmupEnabled={autoWarmupEnabledFor}
+        autoWarmupManagedByAll={autoWarmupAllEnabled}
+        autoWarmupLabel={autoWarmupLabelFor}
+        deleteConfirmationId={deleteConfirmId}
+        onDelete={(accountId, confirmed) => void handleDelete(
+          accountId,
+          confirmed && shouldConfirmAccountDeletion(deleteConfirmId, accountId),
+        )}
+        onRename={(accountId, name) => handleRename(accountId, name)}
         onToggleMask={handleToggleMask}
         onToggleAutoWarmup={(accountId) => void handleToggleAutoWarmup(accountId)}
         onViewFullStats={() => {
@@ -1604,6 +1622,11 @@ return (
             onRefresh={() => void handleRefresh()}
             onWarmupAll={() => void handleWarmupAll()}
             onAddAccount={() => setIsAddModalOpen(true)}
+            onCloseCodex={codexToolbarMode === "close" ? () => {
+              setPendingSwitchAccountId(null);
+              setForceCloseConfirmOpen(true);
+            } : undefined}
+            closingCodex={isForceClosingCodex}
             actions={toolbarActions}
           />
         }

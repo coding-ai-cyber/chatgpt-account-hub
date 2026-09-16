@@ -166,6 +166,8 @@
 }
 
 .app-toolbar {
+  position: relative;
+  z-index: 20;
   min-height: 58px;
   display: flex;
   align-items: center;

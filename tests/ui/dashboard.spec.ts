@@ -180,6 +180,104 @@ test("account actions are grouped and delete stays behind the more menu", async 
   await expect(quotaLimits.getByText("7 天额度")).toBeVisible();
 });
 
+test("current-account actions restore rename, reset credits, guarded warmup, and two-click deletion", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/tests/ui/preview.html?scenario=stateful");
+
+  await page.getByTestId("current-account-name").click();
+  const renameInput = page.getByRole("textbox", { name: "重命名" });
+  await expect(renameInput).toBeVisible();
+  await renameInput.fill("Renamed account");
+  await renameInput.press("Enter");
+  await expect(page.getByTestId("rename-result")).toHaveText("Renamed account");
+
+  await expect(page.getByRole("button", { name: /1 次重置/ })).toBeVisible();
+
+  const warmup = page.getByRole("button", { name: "预热", exact: true });
+  await warmup.click();
+  await expect(warmup).toBeDisabled();
+  await expect(page.getByTestId("warmup-count")).toHaveText("1");
+  await warmup.click({ force: true });
+  await expect(page.getByTestId("warmup-count")).toHaveText("1");
+
+  const more = page.getByRole("button", { name: "更多账户操作" });
+  await more.click();
+  await expect(page.getByRole("button", { name: /自动预热/ })).toBeDisabled();
+  await page.getByRole("button", { name: "移除账户" }).click();
+  await expect(page.getByTestId("delete-pending")).toHaveText("pending");
+  await expect(more).toBeFocused();
+  await more.click();
+  await page.getByRole("button", { name: "移除账户" }).click();
+  await expect(page.getByTestId("delete-result")).toHaveText("deleted");
+});
+
+test("toolbar exposes direct close for a running Codex process", async ({ page }) => {
+  await page.setViewportSize({ width: 888, height: 693 });
+  await page.goto("/tests/ui/preview.html?scenario=stateful");
+  await page.getByRole("button", { name: "关闭 Codex" }).click();
+  await expect(page.getByTestId("close-requested")).toHaveText("requested");
+});
+
+test("both more menus dismiss on Escape, outside click, and action selection", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/tests/ui/preview.html?scenario=stateful");
+
+  const toolbarMore = page.getByRole("button", { name: "更多操作" });
+  await toolbarMore.click();
+  await expect(page.getByRole("button", { name: "检查更新" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "检查更新" })).toBeHidden();
+  await expect(toolbarMore).toBeFocused();
+
+  await toolbarMore.click();
+  await page.getByRole("heading", { name: "当前账户" }).click();
+  await expect(page.getByRole("button", { name: "检查更新" })).toBeHidden();
+
+  await toolbarMore.click();
+  await page.getByRole("button", { name: "检查更新" }).click();
+  await expect(page.getByRole("button", { name: "检查更新" })).toBeHidden();
+  await expect(toolbarMore).toBeFocused();
+
+  const accountMore = page.getByRole("button", { name: "更多账户操作" });
+  await accountMore.click();
+  await expect(page.getByRole("button", { name: "隐藏信息" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "隐藏信息" })).toBeHidden();
+  await expect(accountMore).toBeFocused();
+
+  await accountMore.click();
+  await page.getByRole("heading", { name: "当前账户" }).click();
+  await expect(page.getByRole("button", { name: "隐藏信息" })).toBeHidden();
+});
+
+test("masked statistics keep account ids stable and show the selected inactive status", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/tests/ui/preview.html?scenario=stats");
+
+  const selector = page.locator("#stats-account");
+  await expect(selector).toHaveValue("other-account");
+  await expect(selector.locator("option[value='other-account']")).toHaveText("账户信息已隐藏");
+  await expect(page.getByText("正在查看 账户信息已隐藏 的统计")).toBeVisible();
+  await expect(page.getByText("••••••••")).toBeVisible();
+  await expect(page.getByText("未启用", { exact: true })).toBeVisible();
+});
+
+test("two-account search works and editing a card name does not open details", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/tests/ui/preview.html?scenario=other-accounts");
+
+  const search = page.getByRole("searchbox", { name: "搜索账户" });
+  await search.fill("second@example.com");
+  await expect(page.getByText("Second Account", { exact: true })).toBeVisible();
+  await search.fill("missing");
+  await expect(page.getByRole("heading", { name: "没有匹配的账户" })).toBeVisible();
+  await search.fill("");
+
+  await page.getByText("Second Account", { exact: true }).click();
+  await expect(page.locator(".account-grid input[type='text']")).toBeVisible();
+  await expect(page.locator(".app-overlay")).toHaveCount(0);
+});
+
 test("dashboard shows four summary metrics and a real peak date", async ({ page }) => {
   await page.setViewportSize({ width: 1120, height: 760 });
   await page.goto("/tests/ui/preview.html");

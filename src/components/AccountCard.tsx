@@ -293,6 +293,7 @@ export function AccountCard({
             )}
             {isEditing ? (
               <input
+                data-account-action
                 ref={inputRef}
                 type="text"
                 value={editName}
@@ -303,6 +304,7 @@ export function AccountCard({
               />
             ) : (
               <h3
+                data-account-action
                 className="font-semibold text-gray-900 dark:text-gray-100 truncate cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
                 onClick={() => {
                   if (masked) return;

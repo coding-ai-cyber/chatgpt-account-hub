@@ -15,7 +15,7 @@ import { MetricCard } from "./MetricCard";
 import { Icon } from "../layout/Icon";
 
 export interface CurrentAccountDashboardProps
-  extends Omit<CurrentAccountHeroProps, "account"> {
+  extends Omit<CurrentAccountHeroProps, "account" | "resetCredits"> {
   account: AccountWithUsage;
   stats: AccountUsageStats | null;
   statsLoading: boolean;
@@ -35,8 +35,14 @@ export function CurrentAccountDashboard(props: CurrentAccountDashboardProps) {
     onOpenInBrowser,
     onRefresh,
     onWarmup,
+    warmingUp,
+    onRename,
     onToggleMask,
     onToggleAutoWarmup,
+    autoWarmupEnabled,
+    autoWarmupManagedByAll,
+    autoWarmupLabel,
+    deleteConfirmationPending,
     onDelete,
     onRefreshStats,
     onViewFullStats,
@@ -83,8 +89,15 @@ export function CurrentAccountDashboard(props: CurrentAccountDashboardProps) {
         onOpenInBrowser={onOpenInBrowser}
         onRefresh={onRefresh}
         onWarmup={onWarmup}
+        warmingUp={warmingUp}
+        onRename={onRename}
+        resetCredits={stats?.reset_credits ?? null}
         onToggleMask={onToggleMask}
         onToggleAutoWarmup={onToggleAutoWarmup}
+        autoWarmupEnabled={autoWarmupEnabled}
+        autoWarmupManagedByAll={autoWarmupManagedByAll}
+        autoWarmupLabel={autoWarmupLabel}
+        deleteConfirmationPending={deleteConfirmationPending}
         onDelete={onDelete}
       />
       <section

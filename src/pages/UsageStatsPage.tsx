@@ -3,20 +3,26 @@ import { useLanguage } from "../lib/i18n";
 import { AccountUsageStats } from "../components/AccountUsageStats";
 import { QuotaRing } from "../components/dashboard/QuotaRing";
 import { Icon } from "../components/layout/Icon";
+import { getAccountIdentity } from "../lib/appState";
 
 interface UsageStatsPageProps {
   accounts: AccountWithUsage[];
   selectedAccountId: string | null;
   onSelectedAccountChange: (accountId: string) => void;
+  masked: Set<string>;
 }
 
 export function UsageStatsPage({
   accounts,
   selectedAccountId,
   onSelectedAccountChange,
+  masked,
 }: UsageStatsPageProps) {
   const { t } = useLanguage();
   const selectedAccount = accounts.find((account) => account.id === selectedAccountId) ?? null;
+  const selectedIdentity = selectedAccount
+    ? getAccountIdentity(selectedAccount, masked.has(selectedAccount.id), t("accountHidden"))
+    : null;
 
   if (accounts.length === 0) {
     return (
@@ -57,7 +63,8 @@ export function UsageStatsPage({
           {!selectedAccount && <option value="">{t("statsAccountRequired")}</option>}
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
-              {account.name}{account.is_active ? ` · ${t("active")}` : ""}
+              {getAccountIdentity(account, masked.has(account.id), t("accountHidden")).name}
+              {account.is_active ? ` · ${t("active")}` : ""}
             </option>
           ))}
         </select>
@@ -76,15 +83,15 @@ export function UsageStatsPage({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="truncate text-base font-semibold app-text-primary">
-                  {t("viewingStatsFor", { name: selectedAccount.name })}
+                  {t("viewingStatsFor", { name: selectedIdentity?.name ?? "" })}
                 </h3>
                 <p className="mt-0.5 text-xs app-text-muted">
-                  {selectedAccount.email || selectedAccount.plan_type || selectedAccount.auth_mode}
+                  {selectedIdentity?.email || selectedAccount.plan_type || selectedAccount.auth_mode}
                 </p>
               </div>
-              <span className="app-chip app-chip-success">
-                <Icon name="check" size={14} />
-                {t("statusActive")}
+              <span className={`app-chip ${selectedAccount.is_active ? "app-chip-success" : ""}`}>
+                {selectedAccount.is_active && <Icon name="check" size={14} />}
+                {selectedAccount.is_active ? t("statusActive") : t("statusInactive")}
               </span>
             </div>
             <div className="mt-4">

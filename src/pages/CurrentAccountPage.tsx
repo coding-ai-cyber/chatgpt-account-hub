@@ -16,7 +16,15 @@ interface CurrentAccountPageProps {
   onOpenInBrowser: (accountId: string) => void;
   onRefresh: (accountId: string) => Promise<unknown>;
   onWarmup: (accountId: string, name: string) => void;
-  onDelete: (accountId: string) => void;
+  warmingUpId: string | null;
+  warmingAll: boolean;
+  autoWarmupRunning: (accountId: string) => boolean;
+  autoWarmupEnabled: (accountId: string) => boolean;
+  autoWarmupManagedByAll: boolean;
+  autoWarmupLabel: (accountId: string) => string;
+  deleteConfirmationId: string | null;
+  onDelete: (accountId: string, confirmed: boolean) => void;
+  onRename: (accountId: string, name: string) => Promise<void>;
   onToggleMask: (accountId: string) => void;
   onToggleAutoWarmup: (accountId: string) => void;
   onViewFullStats: () => void;
@@ -34,7 +42,15 @@ export function CurrentAccountPage({
   onOpenInBrowser,
   onRefresh,
   onWarmup,
+  warmingUpId,
+  warmingAll,
+  autoWarmupRunning,
+  autoWarmupEnabled,
+  autoWarmupManagedByAll,
+  autoWarmupLabel,
+  deleteConfirmationId,
   onDelete,
+  onRename,
   onToggleMask,
   onToggleAutoWarmup,
   onViewFullStats,
@@ -121,9 +137,15 @@ export function CurrentAccountPage({
         void onRefresh(account.id);
       }}
       onWarmup={() => onWarmup(account.id, account.name)}
+      warmingUp={warmingAll || warmingUpId === account.id || autoWarmupRunning(account.id)}
+      onRename={(name) => onRename(account.id, name)}
       onToggleMask={() => onToggleMask(account.id)}
       onToggleAutoWarmup={() => onToggleAutoWarmup(account.id)}
-      onDelete={() => onDelete(account.id)}
+      autoWarmupEnabled={autoWarmupEnabled(account.id)}
+      autoWarmupManagedByAll={autoWarmupManagedByAll}
+      autoWarmupLabel={autoWarmupLabel(account.id)}
+      deleteConfirmationPending={deleteConfirmationId === account.id}
+      onDelete={(confirmed) => onDelete(account.id, confirmed)}
       onRefreshStats={() => {
         void refreshStats();
       }}

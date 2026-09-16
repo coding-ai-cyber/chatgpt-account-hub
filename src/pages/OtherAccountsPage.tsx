@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { AccountWithUsage } from "../types";
 import { useLanguage, type Translate, type TranslationKey } from "../lib/i18n";
 import { languageLocale } from "../lib/language";
+import { getAccountIdentity } from "../lib/appState";
 import { AccountCard } from "../components/AccountCard";
 import { UsageBar } from "../components/UsageBar";
 import { Icon, type IconName } from "../components/layout/Icon";
@@ -117,6 +118,9 @@ export function OtherAccountsPage({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const selected = accounts.find((account) => account.id === selectedId);
+  const selectedIdentity = selected
+    ? getAccountIdentity(selected, masked.has(selected.id), t("accountHidden"))
+    : null;
 
   const actionsFor = (accountId: string): { labelKey: TranslationKey; icon: IconName; onClick: () => void }[] => {
     const account = accounts.find((item) => item.id === accountId);
@@ -269,8 +273,8 @@ export function OtherAccountsPage({
           <div className="app-surface-elevated flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden">
             <div className="flex items-start justify-between gap-3 border-b border-[var(--border-subtle)] p-4">
               <div className="min-w-0">
-                <h2 className="truncate text-base font-semibold app-text-primary">{selected.name}</h2>
-                <p className="mt-0.5 truncate text-sm app-text-secondary">{selected.email || t("noAccountsConfigured")}</p>
+                <h2 className="truncate text-base font-semibold app-text-primary">{selectedIdentity?.name}</h2>
+                <p className="mt-0.5 truncate text-sm app-text-secondary">{selectedIdentity?.email || t("noAccountsConfigured")}</p>
               </div>
               <button type="button" className="app-icon-button h-8 w-8" onClick={() => setSelectedId(null)} aria-label={t("closeDetails")} title={t("closeDetails")}>
                 <Icon name="close" size={16} />

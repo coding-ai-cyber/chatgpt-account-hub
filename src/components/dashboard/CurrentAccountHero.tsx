@@ -1,4 +1,5 @@
-import type { AccountWithUsage } from "../../types";
+import { useEffect, useRef, useState } from "react";
+import type { AccountResetCredits, AccountWithUsage } from "../../types";
 import {
   getQuotaWindows,
   type DashboardQuotaWindow,
@@ -8,6 +9,8 @@ import { useLanguage } from "../../lib/i18n";
 import { languageLocale } from "../../lib/language";
 import { Icon } from "../layout/Icon";
 import { QuotaRing } from "./QuotaRing";
+import { ResetCreditsMenu } from "../ResetCreditsMenu";
+import { useDismissibleDetails } from "../../hooks/useDismissibleDetails";
 
 export interface CurrentAccountHeroProps {
   account: AccountWithUsage;
@@ -15,9 +18,16 @@ export interface CurrentAccountHeroProps {
   onOpenInBrowser: () => void;
   onRefresh: () => void;
   onWarmup: () => void;
+  warmingUp: boolean;
+  onRename: (name: string) => Promise<void>;
+  resetCredits: AccountResetCredits | null;
   onToggleMask: () => void;
   onToggleAutoWarmup: () => void;
-  onDelete: () => void;
+  autoWarmupEnabled: boolean;
+  autoWarmupManagedByAll: boolean;
+  autoWarmupLabel: string;
+  deleteConfirmationPending: boolean;
+  onDelete: (confirmed: boolean) => void;
 }
 
 function formatAccountDate(value: string | null, locale: string): string {
@@ -88,6 +98,10 @@ function QuotaLimitRow({
 export function CurrentAccountHero(props: CurrentAccountHeroProps) {
   const { account, masked } = props;
   const { language, t } = useLanguage();
+  const moreMenu = useDismissibleDetails();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(account.name);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const windows = getQuotaWindows(account.usage);
   const locale = languageLocale(language);
   const plan = account.plan_type
@@ -98,6 +112,31 @@ export function CurrentAccountHero(props: CurrentAccountHeroProps) {
   const created = formatAccountDate(account.created_at, locale);
   const subscription = formatAccountDate(account.subscription_expires_at, locale);
 
+  useEffect(() => {
+    if (!isEditing) setEditName(account.name);
+  }, [account.name, isEditing]);
+
+  useEffect(() => {
+    if (isEditing) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  const finishRename = async () => {
+    const nextName = editName.trim();
+    setIsEditing(false);
+    if (!nextName || nextName === account.name) {
+      setEditName(account.name);
+      return;
+    }
+    try {
+      await props.onRename(nextName);
+    } catch {
+      setEditName(account.name);
+    }
+  };
+
   return (
     <section className="current-account-hero app-surface overflow-hidden">
       <div className="current-account-hero-header">
@@ -107,13 +146,51 @@ export function CurrentAccountHero(props: CurrentAccountHeroProps) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="long-text text-lg font-semibold app-text-primary">
-              {masked ? t("accountHidden") : account.name}
+              {isEditing ? (
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  className="app-input h-9 min-w-0 max-w-sm px-2 text-base font-semibold"
+                  value={editName}
+                  aria-label={t("rename")}
+                  onChange={(event) => setEditName(event.target.value)}
+                  onBlur={() => void finishRename()}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") void finishRename();
+                    if (event.key === "Escape") {
+                      setEditName(account.name);
+                      setIsEditing(false);
+                    }
+                  }}
+                />
+              ) : (
+                <span
+                  role="button"
+                  tabIndex={masked ? -1 : 0}
+                  data-testid="current-account-name"
+                  aria-disabled={masked}
+                  className="long-text cursor-pointer text-left hover:underline"
+                  title={masked ? undefined : t("clickToRename")}
+                  onClick={() => {
+                    if (!masked) setIsEditing(true);
+                  }}
+                  onKeyDown={(event) => {
+                    if (!masked && (event.key === "Enter" || event.key === " ")) {
+                      event.preventDefault();
+                      setIsEditing(true);
+                    }
+                  }}
+                >
+                  {masked ? t("accountHidden") : account.name}
+                </span>
+              )}
             </h2>
             <span className="app-chip app-chip-success">
               <span className="app-qr-status-dot" />
               {t("statusActive")}
             </span>
             <span className="app-chip">{plan}</span>
+            <ResetCreditsMenu compact resetCredits={props.resetCredits} />
           </div>
           <p className="long-text mt-1 text-sm app-text-secondary">
             {masked ? "••••••••" : account.email || t("noAccountsConfigured")}
@@ -146,11 +223,13 @@ export function CurrentAccountHero(props: CurrentAccountHeroProps) {
             type="button"
             className="app-btn app-btn-soft-warning px-3 py-2 text-sm"
             onClick={props.onWarmup}
+            disabled={props.warmingUp}
+            aria-label={t("warmup")}
           >
-            <Icon name="lightning" size={16} />
-            {t("warmup")}
+            <Icon name="lightning" size={16} className={props.warmingUp ? "animate-pulse" : ""} />
+            {props.warmingUp ? t("sendingWarmupRequest") : t("warmup")}
           </button>
-          <details className="relative">
+          <details ref={moreMenu.detailsRef} className="relative">
             <summary
               className="app-icon-button list-none cursor-pointer"
               role="button"
@@ -163,24 +242,26 @@ export function CurrentAccountHero(props: CurrentAccountHeroProps) {
               <button
                 type="button"
                 className="app-menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                onClick={props.onToggleMask}
+                onClick={() => moreMenu.select(props.onToggleMask)}
               >
                 <Icon name={masked ? "eye-off" : "eye"} size={16} />
                 {masked ? t("showInfo") : t("hideInfo")}
               </button>
               <button
                 type="button"
-                className="app-menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm"
-                onClick={props.onToggleAutoWarmup}
+                className={`app-menu-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${props.autoWarmupEnabled ? "app-accent" : ""}`}
+                disabled={props.autoWarmupManagedByAll}
+                aria-pressed={props.autoWarmupEnabled}
+                onClick={() => moreMenu.select(props.onToggleAutoWarmup)}
               >
                 <Icon name="clock" size={16} />
-                {t("autoWarmupLabel")}
+                {t("autoWarmupLabel")} · {props.autoWarmupLabel}
               </button>
               <button
                 type="button"
                 className="app-menu-item app-text-danger flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm"
                 aria-label={t("removeAccount")}
-                onClick={props.onDelete}
+                onClick={() => moreMenu.select(() => props.onDelete(props.deleteConfirmationPending))}
               >
                 <Icon name="delete" size={16} />
                 {t("removeAccount")}
