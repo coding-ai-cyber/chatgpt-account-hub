@@ -1,4 +1,5 @@
 import type { AccountDailyUsage, UsageInfo } from "../types";
+import { parseDateOnly } from "./format.ts";
 
 export type DashboardQuotaKind = "session" | "weekly";
 
@@ -69,22 +70,6 @@ function localDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function isValidDateOnly(value: string): boolean {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = new Date(0);
-  date.setHours(0, 0, 0, 0);
-  date.setFullYear(year, month - 1, day);
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  );
-}
-
 export function sumRecentTokens(
   daily: AccountDailyUsage[],
   days: number,
@@ -105,7 +90,7 @@ export function sumRecentTokens(
 
 export function getPeakUsageDay(daily: AccountDailyUsage[]): AccountDailyUsage | null {
   return daily.reduce<AccountDailyUsage | null>((peak, entry) => {
-    if (!isValidDateOnly(entry.date) || !Number.isFinite(entry.tokens) || entry.tokens < 0) return peak;
+    if (!parseDateOnly(entry.date) || !Number.isFinite(entry.tokens) || entry.tokens < 0) return peak;
     if (!peak || entry.tokens > peak.tokens) return entry;
     if (entry.tokens === peak.tokens && entry.date > peak.date) return entry;
     return peak;
