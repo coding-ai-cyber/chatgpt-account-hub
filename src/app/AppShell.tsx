@@ -12,6 +12,20 @@ const appWindow = isTauriRuntime() ? getCurrentWindow() : null;
 const isMacOs =
   typeof navigator !== "undefined" && /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent);
 
+const DRAWER_FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+function getDrawerFocusableElements(sidebar: HTMLElement): HTMLElement[] {
+  return Array.from(sidebar.querySelectorAll<HTMLElement>(DRAWER_FOCUSABLE_SELECTOR))
+    .filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
+}
+
 interface AppShellProps {
   activePage: PageId;
   collapsed: boolean;
@@ -38,10 +52,13 @@ export function AppShell({
   const [isMaximized, setIsMaximized] = useState(false);
   const navigationTriggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
+  const titlebarRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const restoreDrawerFocusRef = useRef(false);
   const sidebarMode = useSidebarMode(collapsed);
   const usesDrawer = sidebarMode === "drawer";
   const drawerHidden = usesDrawer && !drawerOpen;
+  const backgroundHidden = usesDrawer && drawerOpen;
 
   useEffect(() => {
     if (!usesDrawer) setDrawerOpen(false);
@@ -52,6 +69,8 @@ export function AppShell({
     if (!sidebar) return;
 
     sidebar.inert = drawerHidden;
+    if (titlebarRef.current) titlebarRef.current.inert = backgroundHidden;
+    if (mainRef.current) mainRef.current.inert = backgroundHidden;
     if (usesDrawer && drawerOpen) {
       sidebar.querySelector<HTMLElement>(".app-sidebar-nav button")?.focus();
       return;
@@ -61,18 +80,35 @@ export function AppShell({
       restoreDrawerFocusRef.current = false;
       navigationTriggerRef.current?.focus();
     }
-  }, [drawerHidden, drawerOpen, usesDrawer]);
+  }, [backgroundHidden, drawerHidden, drawerOpen, usesDrawer]);
 
   useEffect(() => {
     if (!usesDrawer || !drawerOpen) return;
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      restoreDrawerFocusRef.current = true;
-      setDrawerOpen(false);
+    const handleDrawerKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        restoreDrawerFocusRef.current = true;
+        setDrawerOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab" || !sidebarRef.current) return;
+      const focusableElements = getDrawerFocusableElements(sidebarRef.current);
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if (!firstElement || !lastElement) return;
+
+      const activeElement = document.activeElement;
+      if (event.shiftKey && (activeElement === firstElement || !sidebarRef.current.contains(activeElement))) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && (activeElement === lastElement || !sidebarRef.current.contains(activeElement))) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+    window.addEventListener("keydown", handleDrawerKeyDown);
+    return () => window.removeEventListener("keydown", handleDrawerKeyDown);
   }, [drawerOpen, usesDrawer]);
 
   const handleTitlebarDrag = (event: React.MouseEvent) => {
@@ -86,6 +122,7 @@ export function AppShell({
   };
 
   const handleNavigate = (pageId: PageId) => {
+    if (usesDrawer) restoreDrawerFocusRef.current = true;
     setDrawerOpen(false);
     onNavigate(pageId);
   };
@@ -97,7 +134,11 @@ export function AppShell({
 
   return (
     <div className={`app-shell app-bg ${drawerOpen ? "is-drawer-open" : ""}`}>
-      <header className="app-titlebar">
+      <header
+        ref={titlebarRef}
+        className="app-titlebar"
+        aria-hidden={backgroundHidden || undefined}
+      >
         <div className="flex items-center gap-1" style={isMacOs ? { paddingLeft: "4.5rem" } : undefined}>
           {usesDrawer && (
             <button
@@ -172,6 +213,7 @@ export function AppShell({
         {usesDrawer && drawerOpen && (
           <button
             type="button"
+            tabIndex={-1}
             className="app-drawer-scrim"
             onClick={() => {
               restoreDrawerFocusRef.current = true;
@@ -180,7 +222,11 @@ export function AppShell({
             aria-label={t("closeNavigation")}
           />
         )}
-        <main className="app-main">
+        <main
+          ref={mainRef}
+          className="app-main"
+          aria-hidden={backgroundHidden || undefined}
+        >
           {toolbar}
           <div className="app-content">{children}</div>
         </main>

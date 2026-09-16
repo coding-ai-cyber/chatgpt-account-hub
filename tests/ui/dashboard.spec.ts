@@ -84,6 +84,61 @@ test("closed drawer is inert and restores trigger focus after keyboard or scrim 
   await expect(trigger).toBeFocused();
 });
 
+test("open drawer wraps reverse Tab from the first control to the last", async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 500 });
+  await page.goto("/tests/ui/preview.html");
+  const sidebar = page.locator(".app-sidebar");
+  const firstNavigationItem = sidebar
+    .locator(".app-sidebar-nav")
+    .getByRole("button", { name: "当前账户" });
+  const lastDrawerControl = sidebar.locator(".app-account-summary");
+
+  await page.getByTestId("navigation-trigger").click();
+  await expect(firstNavigationItem).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(lastDrawerControl).toBeFocused();
+  expect(await page.locator(".app-titlebar").evaluate((element) => element.inert)).toBe(true);
+  expect(await page.locator(".app-main").evaluate((element) => element.inert)).toBe(true);
+  await expect(page.locator(".app-titlebar")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator(".app-main")).toHaveAttribute("aria-hidden", "true");
+});
+
+test("open drawer wraps forward Tab without focusing the scrim", async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 500 });
+  await page.goto("/tests/ui/preview.html");
+  const sidebar = page.locator(".app-sidebar");
+  const firstNavigationItem = sidebar
+    .locator(".app-sidebar-nav")
+    .getByRole("button", { name: "当前账户" });
+  const lastDrawerControl = sidebar.locator(".app-account-summary");
+  const scrim = page.locator(".app-drawer-scrim");
+
+  await page.getByTestId("navigation-trigger").click();
+  await lastDrawerControl.focus();
+  await page.keyboard.press("Tab");
+  await expect(firstNavigationItem).toBeFocused();
+  await expect(scrim).toHaveAttribute("tabindex", "-1");
+  await expect(scrim).not.toBeFocused();
+});
+
+test("keyboard navigation closes the drawer and restores trigger focus", async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 500 });
+  await page.goto("/tests/ui/preview.html");
+  const sidebar = page.locator(".app-sidebar");
+  const trigger = page.getByTestId("navigation-trigger");
+  const firstNavigationItem = sidebar
+    .locator(".app-sidebar-nav")
+    .getByRole("button", { name: "当前账户" });
+
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(firstNavigationItem).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await expect(sidebar).toHaveAttribute("aria-hidden", "true");
+  await expect(trigger).toBeFocused();
+});
+
 test("wide windows can honor the saved compact preference without sidebar overflow", async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 700 });
   await page.goto("/tests/ui/preview.html");
