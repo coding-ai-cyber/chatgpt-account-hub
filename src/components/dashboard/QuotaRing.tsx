@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import type { UsageInfo } from "../../types";
+import { getPrimaryQuotaWindow } from "../../lib/accountDashboard";
 import { useLanguage, type Translate } from "../../lib/i18n";
 import {
   formatExactResetTime,
   formatPercent,
   formatResetAt,
-  getPreferredUsageWindow,
 } from "../../lib/format";
 
 interface QuotaRingProps {
@@ -32,9 +32,8 @@ function describeReset(windowKind: "session" | "weekly", usage: UsageInfo, t: Tr
 
 export function QuotaRing({ usage, loading = false }: QuotaRingProps) {
   const { language, t } = useLanguage();
-  const window = useMemo(() => getPreferredUsageWindow(usage), [usage]);
-  const remaining =
-    window && window.usedPercent !== null ? Math.max(0, 100 - window.usedPercent) : null;
+  const window = useMemo(() => getPrimaryQuotaWindow(usage), [usage]);
+  const remaining = window?.remainingPercent ?? null;
   const currentTone = tone(remaining);
   const ringPercent = remaining === null ? 0 : Math.min(100, remaining);
   const exactReset =
@@ -42,11 +41,11 @@ export function QuotaRing({ usage, loading = false }: QuotaRingProps) {
       ? formatExactResetTime(window.resetsAt, language, "full")
       : null;
   const labelKey =
-    window?.labelKind === "weekly" ? t("sevenDayQuota") : t("fiveHourQuota");
-  const resetText = window ? describeReset(window.labelKind, usage!, t) : "";
+    window?.kind === "weekly" ? t("sevenDayQuota") : t("fiveHourQuota");
+  const resetText = window ? describeReset(window.kind, usage!, t) : "";
 
   return (
-    <div className="app-surface flex min-w-0 flex-col items-center gap-3 p-4 sm:flex-row sm:items-center sm:gap-5">
+    <div className="quota-overview flex min-w-0 items-center gap-4">
       <div
         className={`quota-ring-wrap shrink-0 ${currentTone === "warning" ? "is-warning" : ""} ${
           currentTone === "danger" ? "is-danger" : ""

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { AppShell } from "../../src/app/AppShell";
+import { CurrentAccountHero } from "../../src/components/dashboard/CurrentAccountHero";
 import { LanguageProvider } from "../../src/lib/i18n";
 import { fixtureAccount } from "./fixtures";
 import "../../src/App.css";
@@ -19,7 +20,18 @@ function Preview() {
       activeAccount={fixtureAccount}
       toolbar={<div className="app-toolbar app-toolbar-bg"><strong>当前账户</strong></div>}
     >
-      <div className="app-content-inner app-surface p-6">Dashboard fixture</div>
+      <div className="app-content-inner">
+        <CurrentAccountHero
+          account={fixtureAccount}
+          masked={false}
+          onOpenInBrowser={() => {}}
+          onRefresh={() => {}}
+          onWarmup={() => {}}
+          onToggleMask={() => {}}
+          onToggleAutoWarmup={() => {}}
+          onDelete={() => {}}
+        />
+      </div>
     </AppShell>
   );
 }

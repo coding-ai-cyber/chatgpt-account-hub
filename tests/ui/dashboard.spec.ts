@@ -152,3 +152,15 @@ test("wide windows can honor the saved compact preference without sidebar overfl
   );
   expect(sidebarOverflow).toBe(0);
 });
+
+test("account actions are grouped and delete stays behind the more menu", async ({ page }) => {
+  await page.setViewportSize({ width: 1120, height: 760 });
+  await page.goto("/tests/ui/preview.html");
+  await expect(page.locator(".current-account-hero")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "移除账户" })).toBeHidden();
+  await page.getByRole("button", { name: "更多账户操作" }).click();
+  await expect(page.getByRole("button", { name: "移除账户" })).toBeVisible();
+  const quotaLimits = page.locator(".quota-limits");
+  await expect(quotaLimits.getByText("5 小时额度")).toBeVisible();
+  await expect(quotaLimits.getByText("7 天额度")).toBeVisible();
+});

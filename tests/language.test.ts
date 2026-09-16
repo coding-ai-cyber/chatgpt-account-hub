@@ -180,6 +180,14 @@ test('routes the complete visible React copy inventory through useLanguage', () 
       'expandSidebar', 'activeAccountSummary', 'accountHidden',
       'noAccountsConfigured', 'statusActive',
     ],
+    'src/components/dashboard/CurrentAccountHero.tsx': [
+      'apiKey', 'unknown', 'accountHidden', 'statusActive',
+      'noAccountsConfigured', 'activeSince', 'subscriptionStatus',
+      'openInBrowserAction', 'refreshAccount', 'warmup',
+      'moreAccountActions', 'showInfo', 'hideInfo', 'autoWarmupLabel',
+      'removeAccount', 'fiveHourQuota', 'sevenDayQuota',
+      'quotaUnavailable', 'percentLeft', 'resetsIn', 'resetsAtExact',
+    ],
     'src/pages/CurrentAccountPage.tsx': [
       'apiKey', 'unknown', 'lifetimeTokens', 'todayTokens',
       'lastSevenDayTokens', 'currentStreakDays', 'longestTaskTime', 'days',
