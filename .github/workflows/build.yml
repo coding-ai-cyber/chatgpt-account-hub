@@ -111,7 +111,6 @@ jobs:
           generateReleaseNotes: true
           releaseDraft: false
           prerelease: false
-          includeUpdaterJson: true
-          updaterJsonKeepUniversal: true
+          uploadUpdaterJson: true
           retryAttempts: 3
           args: --target ${{ matrix.target }}
