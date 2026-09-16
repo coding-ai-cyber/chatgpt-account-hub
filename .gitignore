@@ -1,6 +1,10 @@
 # Logs
 logs
 *.log
+
+# Local Tauri updater signing keys
+chatgpt-account-hub-signing.key
+chatgpt-account-hub-signing.key.pub
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
