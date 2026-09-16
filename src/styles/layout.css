@@ -191,7 +191,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 1.5rem 1.5rem 2rem;
+  overflow-x: clip;
+  padding: 1.125rem 1.375rem 1.75rem;
 }
 
 .app-content-inner {

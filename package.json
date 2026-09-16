@@ -14,6 +14,7 @@
     "test:theme": "node --experimental-strip-types --test tests/theme.test.ts",
     "test:dashboard-data": "node --experimental-strip-types --test tests/accountDashboard.test.ts",
     "test:sidebar": "node --experimental-strip-types --test tests/sidebarState.test.ts",
+    "test:dashboard": "node --experimental-strip-types --test tests/accountDashboard.test.ts tests/sidebarState.test.ts tests/defaultTheme.test.ts",
     "test:ui": "playwright test -c tests/ui/playwright.config.ts",
     "preview": "vite preview",
     "tauri": "sh ./scripts/tauri.sh",
