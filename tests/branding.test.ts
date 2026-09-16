@@ -44,6 +44,8 @@ test("project consumers do not retain the original repository URL", () => {
 test("visible surfaces use the ChatGPT account hub brand", () => {
   const root = resolve(import.meta.dirname, "..");
   const visibleSurfaces = [
+    ["index.html", ["<title>ChatGPT 账号管家</title>"]],
+    ["tray.html", ["<title>ChatGPT 账号管家 · 托盘</title>"]],
     ["src/lib/i18n.tsx", ["ChatGPT 账号管家", "ChatGPT Account Hub"]],
     ["src/components/layout/Sidebar.tsx", ["ChatGPT 账号管家"]],
     ["src/TrayMenu.tsx", ["ChatGPT 账号管家"]],
@@ -62,11 +64,13 @@ test("visible surfaces use the ChatGPT account hub brand", () => {
 
   for (const [file, expectedNames] of visibleSurfaces) {
     const source = readFileSync(resolve(root, file), "utf8");
-    assert.equal(
-      source.includes("Codex Switcher"),
-      false,
-      `${file} retains the stale visible product name`,
-    );
+    for (const staleName of ["Codex Switcher", "Codex.Switcher"]) {
+      assert.equal(
+        source.includes(staleName),
+        false,
+        `${file} retains the stale visible product name ${staleName}`,
+      );
+    }
 
     for (const expectedName of expectedNames) {
       assert.equal(
@@ -90,5 +94,32 @@ test("visible surfaces use the ChatGPT account hub brand", () => {
     processSource.includes("ChatGPT Account Hub needs permission"),
     true,
     "the macOS elevation prompt is missing the English product name",
+  );
+
+  const readme = readFileSync(resolve(root, "README.md"), "utf8");
+  for (const packagePattern of [
+    "ChatGPT 账号管家_*_aarch64.dmg",
+    "ChatGPT 账号管家_*_x64.dmg",
+    "ChatGPT 账号管家_*_x64-setup.exe",
+    "ChatGPT 账号管家_*_x64_en-US.msi",
+    "ChatGPT 账号管家_*_amd64.deb",
+    "ChatGPT 账号管家_*_amd64.AppImage",
+    "ChatGPT 账号管家-*-1.x86_64.rpm",
+  ]) {
+    assert.equal(
+      readme.includes(packagePattern),
+      true,
+      `README.md is missing release package pattern ${packagePattern}`,
+    );
+  }
+  assert.equal(
+    readme.includes("pgrep -x 'codex-switcher'"),
+    true,
+    "the macOS keep-awake command must use the retained executable name",
+  );
+  assert.equal(
+    readme.includes("pgrep -x 'ChatGPT 账号管家'"),
+    false,
+    "the macOS keep-awake command must not use the display name",
   );
 });

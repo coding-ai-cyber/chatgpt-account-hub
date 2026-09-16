@@ -39,12 +39,12 @@ The easiest way to install ChatGPT Account Hub is from the latest GitHub release
 
 Choose the file for your platform:
 
-- **macOS Apple Silicon:** `Codex.Switcher_*_aarch64.dmg`
-- **macOS Intel:** `Codex.Switcher_*_x64.dmg`
-- **Windows:** `Codex.Switcher_*_x64-setup.exe` or `Codex.Switcher_*_x64_en-US.msi`
-- **Linux Debian/Ubuntu:** `Codex.Switcher_*_amd64.deb`
-- **Linux AppImage:** `Codex.Switcher_*_amd64.AppImage`
-- **Linux RPM:** `Codex.Switcher-*-1.x86_64.rpm`
+- **macOS Apple Silicon:** `ChatGPT 账号管家_*_aarch64.dmg`
+- **macOS Intel:** `ChatGPT 账号管家_*_x64.dmg`
+- **Windows:** `ChatGPT 账号管家_*_x64-setup.exe` or `ChatGPT 账号管家_*_x64_en-US.msi`
+- **Linux Debian/Ubuntu:** `ChatGPT 账号管家_*_amd64.deb`
+- **Linux AppImage:** `ChatGPT 账号管家_*_amd64.AppImage`
+- **Linux RPM:** `ChatGPT 账号管家-*-1.x86_64.rpm`
 
 > **macOS:** current release builds are not Apple-notarized. If macOS says the
 > app is damaged, move it to `/Applications` and remove the quarantine flag:
@@ -200,7 +200,7 @@ On macOS you can keep the machine awake with the built-in `caffeinate` command,
 which stops automatically when the app quits:
 
 ```bash
-caffeinate -i -w "$(pgrep -x 'ChatGPT 账号管家')"
+caffeinate -i -w "$(pgrep -x 'codex-switcher')"
 ```
 
 ## Disclaimer
