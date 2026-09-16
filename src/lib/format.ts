@@ -1,5 +1,5 @@
 import type { UsageInfo } from "../types";
-import { languageLocale, type Language } from "./language";
+import { languageLocale, type Language } from "./language.ts";
 
 export function formatTokens(tokens: number | null | undefined): string {
   if (tokens === null || tokens === undefined || !Number.isFinite(tokens)) return "--";
@@ -98,4 +98,32 @@ export function getPreferredUsageWindow(
     };
   }
   return null;
+}
+
+function parseDateOnly(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(0);
+  date.setHours(0, 0, 0, 0);
+  date.setFullYear(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+    ? date
+    : null;
+}
+
+export function formatDateOnly(
+  value: string | null | undefined,
+  language: Language,
+): string {
+  const date = parseDateOnly(value);
+  if (!date) return "--";
+  return new Intl.DateTimeFormat(languageLocale(language), {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }

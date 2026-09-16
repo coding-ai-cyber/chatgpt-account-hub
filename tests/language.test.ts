@@ -76,6 +76,8 @@ test('keeps the visible React copy inventory in the translation dictionary', () 
     'tokenActivityRange', 'longestTask', 'longestStreak', 'days', 'fastMode', 'reasoning',
     'skillsExplored', 'totalThreads', 'statsAsOf', 'chatGPTBackend', 'refreshUsageStats',
     'lifetime', 'reported', 'currentStreak', 'peakDay', 'resetCreditExpiryDetails',
+    'peakDate', 'usageAdviceTitle', 'usageAdviceHealthy', 'usageAdviceWatchReset',
+    'usageAdviceRefresh', 'moreAccountActions', 'quotaHealthy',
     'resetsNow', 'resetsIn', 'neverExpiry', 'cannotSwitchWhile', 'codexUsageStatsSource',
     'noFileSelected', 'exportFullEncryptedAccountConfig', 'importFullEncryptedAccountConfig',
     'codexWillOnlyBeClosed', 'unsavedCodexWorkMayBeLost', 'desktopAppNotIdentified',

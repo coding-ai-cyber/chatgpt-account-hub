@@ -12,6 +12,7 @@
     "test:reset-credits": "node --experimental-strip-types --test tests/resetCredits.test.ts",
     "test:navigation": "node --experimental-strip-types --test tests/navigation.test.ts",
     "test:theme": "node --experimental-strip-types --test tests/theme.test.ts",
+    "test:dashboard-data": "node --experimental-strip-types --test tests/accountDashboard.test.ts",
     "preview": "vite preview",
     "tauri": "sh ./scripts/tauri.sh",
     "tauri:win": "tauri",
