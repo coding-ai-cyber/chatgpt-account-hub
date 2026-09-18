@@ -4,6 +4,8 @@ import TrayMenu from "./TrayMenu";
 import { LanguageProvider } from "./lib/i18n";
 import { syncThemeFromStorage } from "./lib/theme";
 import "./App.css";
+import "./styles/tokens.css";
+import "./styles/themes.css";
 
 syncThemeFromStorage();
 

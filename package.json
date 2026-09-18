@@ -10,6 +10,12 @@
     "test:desktop-reopen": "node --experimental-strip-types --test tests/desktopReopen.test.ts",
     "test:close-preference": "node --experimental-strip-types --test tests/codexClosePreference.test.ts",
     "test:reset-credits": "node --experimental-strip-types --test tests/resetCredits.test.ts",
+    "test:navigation": "node --experimental-strip-types --test tests/navigation.test.ts",
+    "test:theme": "node --experimental-strip-types --test tests/theme.test.ts",
+    "test:dashboard-data": "node --experimental-strip-types --test tests/accountDashboard.test.ts",
+    "test:sidebar": "node --experimental-strip-types --test tests/sidebarState.test.ts",
+    "test:dashboard": "node --experimental-strip-types --test tests/accountDashboard.test.ts tests/sidebarState.test.ts tests/defaultTheme.test.ts",
+    "test:ui": "playwright test -c tests/ui/playwright.config.ts",
     "preview": "vite preview",
     "tauri": "sh ./scripts/tauri.sh",
     "tauri:win": "tauri",
@@ -33,6 +39,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/cli": "^2",
     "@types/react": "^19.1.8",

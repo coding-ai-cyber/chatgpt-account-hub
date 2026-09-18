@@ -34,26 +34,17 @@
 ### 下载发行版
 
 前往 [GitHub 最新发行版](https://github.com/coding-ai-cyber/chatgpt-account-hub/releases/latest)
-下载适合你系统的安装包：
+下载 Windows 安装程序：
 
-- **Windows**：`ChatGPT 账号管家_*_x64-setup.exe` 或 `ChatGPT 账号管家_*_x64_zh-CN.msi`
-- **macOS Apple Silicon**：`ChatGPT 账号管家_*_aarch64.dmg`
-- **macOS Intel**：`ChatGPT 账号管家_*_x64.dmg`
-- **Linux Debian/Ubuntu**：`ChatGPT 账号管家_*_amd64.deb`
-- **Linux AppImage**：`ChatGPT 账号管家_*_amd64.AppImage`
-- **Linux RPM**：`ChatGPT 账号管家-*-1.x86_64.rpm`
+- **Windows x64**：`ChatGPT 账号管家_*_x64-setup.exe`
 
-macOS 当前发行版未进行 Apple 公证。如果系统提示应用已损坏，可将应用移动到
-`/Applications` 后执行：
-
-```bash
-sudo xattr -dr com.apple.quarantine "/Applications/ChatGPT 账号管家.app"
-open "/Applications/ChatGPT 账号管家.app"
-```
+这是已经打包好的 Windows 安装程序，安装后即可直接运行，不需要另外安装
+Node.js、pnpm、Rust 或 Python 等开发环境。安装程序会自动处理应用运行所需的
+Windows WebView2 组件。
 
 ### 从源码构建
 
-准备以下环境：
+如果你只是使用软件，不需要准备开发环境。只有从源码构建时才需要：
 
 - [Node.js](https://nodejs.org/) 18 或更高版本
 - [pnpm](https://pnpm.io/)

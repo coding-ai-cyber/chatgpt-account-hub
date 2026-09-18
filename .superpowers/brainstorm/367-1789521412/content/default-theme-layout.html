@@ -1,0 +1,173 @@
+<style>
+  .cx-wrap { max-width: 1240px; margin: 0 auto; }
+  .cx-note { margin: 0 0 18px; color: #66758b; }
+  .cx-window {
+    overflow: hidden;
+    border: 1px solid #dfe6f1;
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 70% 4%, rgba(177, 198, 255, .34), transparent 30%),
+      radial-gradient(circle at 96% 52%, rgba(213, 192, 255, .24), transparent 27%),
+      #f6f8fc;
+    box-shadow: 0 22px 70px rgba(37, 55, 88, .16);
+    color: #152238;
+  }
+  .cx-titlebar { height: 28px; display:flex; align-items:center; justify-content:flex-end; padding:0 12px; border-bottom:1px solid rgba(212,220,233,.72); background:rgba(255,255,255,.58); }
+  .cx-controls { display:flex; gap:15px; color:#8090a7; font-size:11px; }
+  .cx-app { display:grid; grid-template-columns: 188px minmax(0, 1fr); min-height: 666px; }
+  .cx-sidebar { display:flex; flex-direction:column; padding:16px 12px 12px; border-right:1px solid rgba(208,217,231,.82); background:rgba(248,250,254,.86); backdrop-filter: blur(16px); }
+  .cx-brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; }
+  .cx-logo { width:34px; height:34px; border-radius:11px; display:grid; place-items:center; color:white; font-weight:800; background:linear-gradient(145deg,#63d7e5,#5a66f4 58%,#aa76ec); box-shadow:0 8px 22px rgba(71,103,232,.3); }
+  .cx-brand strong { display:block; font-size:14px; }
+  .cx-brand small { color:#93a0b2; font-size:10px; }
+  .cx-nav { display:grid; gap:6px; }
+  .cx-nav-item { display:grid; grid-template-columns:30px minmax(0,1fr); align-items:center; min-height:42px; padding:0 9px; border-radius:11px; color:#69778c; font-size:12px; font-weight:650; }
+  .cx-nav-item span:first-child { width:28px; height:28px; display:grid; place-items:center; border-radius:9px; border:1px solid transparent; font-size:13px; }
+  .cx-nav-item.active { color:#255cdf; background:linear-gradient(90deg,rgba(64,111,235,.13),rgba(123,152,244,.08)); }
+  .cx-nav-item.active span:first-child { color:#fff; background:#2f67e9; box-shadow:0 7px 17px rgba(47,103,233,.24); }
+  .cx-side-spacer { flex:1; }
+  .cx-mini-account { display:flex; gap:8px; align-items:center; padding:9px; border:1px solid rgba(208,217,231,.88); border-radius:12px; background:rgba(255,255,255,.75); }
+  .cx-mini-avatar { width:30px; height:30px; border-radius:9px; display:grid; place-items:center; background:#e8efff; color:#3565dd; font-weight:800; font-size:11px; }
+  .cx-mini-account strong { display:block; max-width:102px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; }
+  .cx-mini-account small { color:#23a56b; font-size:9px; }
+  .cx-main { min-width:0; display:flex; flex-direction:column; }
+  .cx-toolbar { min-height:62px; padding:0 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(208,217,231,.72); background:rgba(255,255,255,.53); backdrop-filter: blur(16px); }
+  .cx-toolbar h3 { margin:0; font-size:16px; }
+  .cx-toolbar p { margin:3px 0 0; font-size:10px; color:#8b98aa; }
+  .cx-actions { display:flex; align-items:center; gap:7px; }
+  .cx-running { display:flex; align-items:center; gap:6px; height:28px; padding:0 10px; border-radius:999px; background:#fff5df; color:#ad6c13; font-size:10px; font-weight:700; }
+  .cx-dot { width:7px; height:7px; border-radius:50%; background:#f0a21b; }
+  .cx-icon-btn { width:34px; height:34px; display:grid; place-items:center; border:1px solid #dfe6f0; border-radius:10px; background:rgba(255,255,255,.8); color:#526178; font-size:12px; }
+  .cx-icon-btn.primary { border-color:transparent; background:#3168ec; color:white; box-shadow:0 8px 18px rgba(49,104,236,.25); }
+  .cx-content { padding:18px 22px 24px; }
+  .cx-hero { overflow:hidden; border:1px solid rgba(207,219,239,.9); border-radius:18px; background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(249,252,255,.86) 55%,rgba(234,240,255,.84)); box-shadow:0 12px 32px rgba(53,78,116,.09); }
+  .cx-account-head { display:flex; align-items:center; gap:12px; padding:15px 17px 12px; }
+  .cx-avatar { width:42px; height:42px; border-radius:13px; display:grid; place-items:center; color:#fff; font-weight:800; background:linear-gradient(145deg,#2f77f4,#5655e9); box-shadow:0 9px 20px rgba(56,83,222,.24); }
+  .cx-account-text { min-width:0; flex:1; }
+  .cx-account-title { display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+  .cx-account-title strong { font-size:14px; }
+  .cx-account-text p { margin:3px 0 0; color:#75859b; font-size:10px; }
+  .cx-badge { display:inline-flex; align-items:center; height:20px; padding:0 8px; border-radius:999px; background:#e6f8ef; color:#18945b; font-size:9px; font-weight:800; }
+  .cx-badge.plan { background:#edf2ff; color:#5370aa; }
+  .cx-quick { display:flex; gap:6px; }
+  .cx-quick button { height:30px; padding:0 10px; border:1px solid #dde5f0; border-radius:9px; background:rgba(255,255,255,.78); color:#53627a; font-size:9px; font-weight:700; }
+  .cx-quick .warm { background:#fff5df; color:#aa6b10; border-color:#f6e5bd; }
+  .cx-hero-body { display:grid; grid-template-columns: 210px minmax(0,1fr); gap:20px; padding:12px 17px 17px; }
+  .cx-ring-area { display:flex; align-items:center; gap:14px; padding:12px; border-radius:15px; background:rgba(255,255,255,.68); }
+  .cx-ring { width:105px; height:105px; flex:none; border-radius:50%; display:grid; place-items:center; background:radial-gradient(circle,#fff 0 59%,transparent 60%),conic-gradient(#39c89c 0 85%,#e8f3f1 85%); box-shadow:inset 0 0 0 1px rgba(69,155,140,.08); }
+  .cx-ring strong { display:block; font-size:23px; text-align:center; }
+  .cx-ring small { display:block; margin-top:2px; color:#8a98aa; font-size:9px; text-align:center; }
+  .cx-ring-meta b { display:block; font-size:10px; }
+  .cx-ring-meta span { display:block; margin-top:4px; color:#8a98aa; font-size:8px; line-height:1.45; }
+  .cx-limits { display:grid; gap:11px; align-content:center; padding:7px 6px; }
+  .cx-limit-row { display:grid; gap:6px; }
+  .cx-limit-label { display:flex; justify-content:space-between; gap:12px; color:#506078; font-size:10px; font-weight:700; }
+  .cx-limit-label span:last-child { color:#738299; font-weight:600; }
+  .cx-track { height:7px; overflow:hidden; border-radius:999px; background:#e9eef5; }
+  .cx-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,#25c79c,#40d5a7); box-shadow:0 0 12px rgba(37,199,156,.28); }
+  .cx-fill.blue { width:58%; background:linear-gradient(90deg,#4777ef,#7c73ef); }
+  .cx-fill.green { width:85%; }
+  .cx-reset { color:#94a0b1; font-size:9px; }
+  .cx-summary { margin-top:13px; display:grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap:9px; }
+  .cx-stat { min-width:0; padding:12px 13px; border:1px solid rgba(213,222,235,.82); border-radius:13px; background:rgba(255,255,255,.74); box-shadow:0 6px 18px rgba(55,78,111,.045); }
+  .cx-stat span { display:block; color:#8997a9; font-size:9px; }
+  .cx-stat strong { display:block; margin-top:6px; font-size:14px; }
+  .cx-stat small { display:block; margin-top:2px; color:#a1abba; font-size:8px; }
+  .cx-bottom { margin-top:13px; display:grid; grid-template-columns:minmax(0,1.45fr) minmax(260px,.8fr); gap:12px; }
+  .cx-panel { padding:14px; border:1px solid rgba(213,222,235,.85); border-radius:15px; background:rgba(255,255,255,.76); box-shadow:0 7px 22px rgba(55,78,111,.05); }
+  .cx-panel-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .cx-panel-head strong { font-size:11px; }
+  .cx-panel-head a { color:#416dd9; font-size:9px; font-weight:700; }
+  .cx-activity { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .cx-activity div { padding:10px; border-radius:11px; background:#f3f6fb; }
+  .cx-activity span { display:block; color:#8a98aa; font-size:8px; }
+  .cx-activity b { display:block; margin-top:4px; font-size:11px; }
+  .cx-tip { display:flex; gap:10px; align-items:center; min-height:62px; padding:10px; border-radius:12px; background:linear-gradient(135deg,#eaf1ff,#f2edff); }
+  .cx-tip-icon { width:34px; height:34px; flex:none; border-radius:11px; display:grid; place-items:center; background:#fff; color:#5c64e9; font-weight:800; box-shadow:0 6px 14px rgba(82,83,194,.12); }
+  .cx-tip strong { display:block; font-size:10px; }
+  .cx-tip p { margin:3px 0 0; color:#7c89a0; font-size:8px; line-height:1.5; }
+  .cx-points { margin-top:18px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .cx-point { padding:12px; border-radius:12px; background:#f6f8fc; color:#59687e; font-size:11px; }
+  .cx-point b { display:block; margin-bottom:3px; color:#22314a; }
+  @media (max-width: 900px) {
+    .cx-app { grid-template-columns:72px minmax(0,1fr); }
+    .cx-brand > div:last-child, .cx-nav-item span:last-child, .cx-mini-account > div:last-child { display:none; }
+    .cx-brand { justify-content:center; padding-inline:0; }
+    .cx-nav-item { grid-template-columns:1fr; padding-inline:0; }
+    .cx-nav-item span:first-child { margin:auto; }
+    .cx-sidebar { padding-inline:10px; }
+    .cx-summary { grid-template-columns:repeat(2,1fr); }
+    .cx-bottom { grid-template-columns:1fr; }
+  }
+</style>
+
+<div class="cx-wrap">
+  <h2>默认主题优化稿：柔和渐变仪表盘</h2>
+  <p class="cx-note">重点看侧栏比例、主卡信息层级、额度展示和卡片密度。点击预览即可标记“方向认可”。</p>
+
+  <div class="card" data-choice="approve-soft-gradient-dashboard" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:14px;background:#eef2f8;">
+      <div class="cx-window">
+        <div class="cx-titlebar"><div class="cx-controls"><span>—</span><span>□</span><span>×</span></div></div>
+        <div class="cx-app">
+          <aside class="cx-sidebar">
+            <div class="cx-brand"><div class="cx-logo">C</div><div><strong>Codex Switcher</strong><small>账户与额度中心</small></div></div>
+            <nav class="cx-nav">
+              <div class="cx-nav-item active"><span>◉</span><span>当前账户</span></div>
+              <div class="cx-nav-item"><span>◎</span><span>其他账户</span></div>
+              <div class="cx-nav-item"><span>⌁</span><span>使用统计</span></div>
+              <div class="cx-nav-item"><span>?</span><span>帮助中心</span></div>
+              <div class="cx-nav-item"><span>⚙</span><span>设置</span></div>
+            </nav>
+            <div class="cx-side-spacer"></div>
+            <div class="cx-mini-account"><div class="cx-mini-avatar">NO</div><div><strong>numeral.octet-0h</strong><small>● 当前使用</small></div></div>
+          </aside>
+
+          <section class="cx-main">
+            <div class="cx-toolbar">
+              <div><h3>当前账户</h3><p>账户状态、额度与近期使用概览</p></div>
+              <div class="cx-actions"><div class="cx-running"><span class="cx-dot"></span>1 个 Codex 正在运行</div><div class="cx-icon-btn">◌</div><div class="cx-icon-btn">↻</div><div class="cx-icon-btn">ϟ</div><div class="cx-icon-btn primary">＋</div><div class="cx-icon-btn">•••</div></div>
+            </div>
+
+            <div class="cx-content">
+              <div class="cx-hero">
+                <div class="cx-account-head">
+                  <div class="cx-avatar">NO</div>
+                  <div class="cx-account-text"><div class="cx-account-title"><strong>numeral.octet-0h@icloud.com</strong><span class="cx-badge">● 当前</span><span class="cx-badge plan">Plus</span></div><p>生效日 2026年9月15日 · 订阅状态 2026年10月16日</p></div>
+                  <div class="cx-quick"><button>在浏览器打开</button><button>刷新账户</button><button class="warm">预热</button><button>更多</button></div>
+                </div>
+                <div class="cx-hero-body">
+                  <div class="cx-ring-area"><div class="cx-ring"><div><strong>85%</strong><small>周额度剩余</small></div></div><div class="cx-ring-meta"><b>状态良好</b><span>预计可用至<br>下次额度重置</span></div></div>
+                  <div class="cx-limits">
+                    <div class="cx-limit-row"><div class="cx-limit-label"><span>5 小时额度</span><span>剩余 58% · 3h 45m</span></div><div class="cx-track"><div class="cx-fill blue"></div></div><div class="cx-reset">重置于今天 20:34</div></div>
+                    <div class="cx-limit-row"><div class="cx-limit-label"><span>7 天额度</span><span>剩余 85% · 6d 11h</span></div><div class="cx-track"><div class="cx-fill green"></div></div><div class="cx-reset">重置于 9月22日 20:34</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cx-summary">
+                <div class="cx-stat"><span>生命周期</span><strong>82.5M</strong><small>累计 Tokens</small></div>
+                <div class="cx-stat"><span>今天</span><strong>2.1M</strong><small>较昨日 +8%</small></div>
+                <div class="cx-stat"><span>最近 7 天</span><strong>18.7M</strong><small>使用稳定</small></div>
+                <div class="cx-stat"><span>当前连续天数</span><strong>6 天</strong><small>本月最佳 11 天</small></div>
+              </div>
+
+              <div class="cx-bottom">
+                <div class="cx-panel"><div class="cx-panel-head"><strong>最近活动</strong><a>查看完整统计 →</a></div><div class="cx-activity"><div><span>快速模式</span><b>0%</b></div><div><span>线程总数</span><b>15</b></div><div><span>峰值日期</span><b>9月14日</b></div></div></div>
+                <div class="cx-panel"><div class="cx-panel-head"><strong>使用建议</strong><a>帮助中心</a></div><div class="cx-tip"><div class="cx-tip-icon">✦</div><div><strong>当前额度充足</strong><p>本周使用节奏稳定，无需切换账户。</p></div></div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div class="card-body"><h3>优化重点</h3><p>侧栏不再挤压文字；账户、额度与操作合为一张主卡；四项摘要保持同一层级；最近活动减少无意义灰块，并修正“峰值日”的数据语义。</p></div>
+  </div>
+
+  <div class="cx-points">
+    <div class="cx-point"><b>侧栏</b>188px 展开、72px 折叠；折叠时彻底隐藏文字，不产生横向滚动。</div>
+    <div class="cx-point"><b>主卡</b>账户身份、快捷操作、额度环和双周期额度集中展示。</div>
+    <div class="cx-point"><b>层级</b>减少独立白卡数量，用背景层次和间距代替重复边框。</div>
+    <div class="cx-point"><b>数据</b>“峰值日期”显示日期；峰值 Tokens 作为单独指标，不混用标签。</div>
+  </div>
+</div>

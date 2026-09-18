@@ -41,7 +41,7 @@ pub fn menu_text(language: AppLanguage, key: MenuTextKey) -> &'static str {
             MenuTextKey::Edit => "编辑",
             MenuTextKey::View => "视图",
             MenuTextKey::NoAccountsConfigured => "未配置账户",
-            MenuTextKey::OpenCodexSwitcher => "打开 Codex Switcher",
+            MenuTextKey::OpenCodexSwitcher => "打开 ChatGPT 账号管家",
             MenuTextKey::Quit => "退出",
         },
         AppLanguage::En => match key {
@@ -60,7 +60,7 @@ pub fn menu_text(language: AppLanguage, key: MenuTextKey) -> &'static str {
             MenuTextKey::Edit => "Edit",
             MenuTextKey::View => "View",
             MenuTextKey::NoAccountsConfigured => "No accounts configured",
-            MenuTextKey::OpenCodexSwitcher => "Open Codex Switcher",
+            MenuTextKey::OpenCodexSwitcher => "Open ChatGPT Account Hub",
             MenuTextKey::Quit => "Quit",
         },
     }

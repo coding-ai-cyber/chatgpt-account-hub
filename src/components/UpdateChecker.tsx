@@ -50,7 +50,13 @@ export function UpdateChecker() {
       void checkForUpdate();
     }, UPDATE_CHECK_INTERVAL_MS);
 
-    return () => window.clearInterval(interval);
+    const handleManualCheck = () => void checkForUpdate();
+    window.addEventListener("codex-switcher-check-updates", handleManualCheck);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("codex-switcher-check-updates", handleManualCheck);
+    };
   }, [checkForUpdate]);
 
   const handleDownloadAndInstall = async () => {

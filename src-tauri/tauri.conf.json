@@ -14,8 +14,8 @@
     "windows": [
       {
         "title": "ChatGPT 账号管家",
-        "width": 900,
-        "height": 700,
+        "width": 1120,
+        "height": 760,
         "minWidth": 600,
         "minHeight": 500
       }
@@ -38,6 +38,10 @@
     "windows": {
       "wix": {
         "language": "zh-CN"
+      },
+      "webviewInstallMode": {
+        "type": "offlineInstaller",
+        "silent": true
       }
     }
   },

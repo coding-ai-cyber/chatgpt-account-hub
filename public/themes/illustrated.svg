@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1344 768" role="img" aria-label="ChatGPT Account Hub illustrated theme background">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fdf6e9"/>
+      <stop offset="0.52" stop-color="#e8f0fb"/>
+      <stop offset="1" stop-color="#d8e9f5"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef3f8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1344" height="768" fill="url(#sky)"/>
+  <path d="M0 600 C240 520 420 560 640 610 C860 660 1080 630 1344 560 L1344 768 L0 768 Z" fill="#cfd9e4" opacity="0.72"/>
+  <path d="M0 646 C300 588 520 620 760 660 C980 696 1190 660 1344 610 L1344 768 L0 768 Z" fill="#a7b9c9" opacity="0.56"/>
+  <g transform="translate(100 120)">
+    <rect width="340" height="210" rx="26" fill="url(#card)" stroke="#b9c7d4" stroke-width="3"/>
+    <rect x="28" y="30" width="126" height="92" rx="18" fill="#dce9f8" stroke="#8aa4c0" stroke-width="4"/>
+    <circle cx="82" cy="66" r="18" fill="#5b8def"/>
+    <circle cx="130" cy="92" r="12" fill="#7cb5ec" opacity="0.75"/>
+    <line x1="188" y1="38" x2="298" y2="38" stroke="#9fb2c4" stroke-width="9" stroke-linecap="round"/>
+    <line x1="188" y1="66" x2="282" y2="66" stroke="#b9c7d4" stroke-width="9" stroke-linecap="round"/>
+    <rect x="28" y="146" width="280" height="38" rx="19" fill="#7ed1a9" opacity="0.85"/>
+    <circle cx="300" cy="165" r="12" fill="#ffffff" opacity="0.55"/>
+  </g>
+  <g transform="translate(610 92)">
+    <rect width="300" height="196" rx="26" fill="url(#card)" stroke="#b9c7d4" stroke-width="3"/>
+    <rect x="24" y="24" width="120" height="120" rx="60" fill="#e9d6c8" stroke="#c8a486" stroke-width="4"/>
+    <path d="M52 84 L84 58 L116 108 L146 82 L168 102" fill="none" stroke="#4f7f58" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="166" y="28" width="104" height="22" rx="11" fill="#f4c96b"/>
+    <rect x="166" y="66" width="104" height="22" rx="11" fill="#d9e4ec"/>
+    <rect x="166" y="104" width="72" height="22" rx="11" fill="#a5c8e8"/>
+  </g>
+  <g transform="translate(1030 150)">
+    <rect width="220" height="180" rx="24" fill="#ffffff" stroke="#cfb4a4" stroke-width="3"/>
+    <circle cx="60" cy="65" r="30" fill="#f18d6b"/>
+    <circle cx="156" cy="65" r="20" fill="#8fc9c3"/>
+    <rect x="48" y="122" width="124" height="20" rx="10" fill="#f3dba8"/>
+    <rect x="48" y="152" width="92" height="16" rx="8" fill="#dce6ed"/>
+  </g>
+  <g transform="translate(188 440)" opacity="0.92">
+    <path d="M-14 40 C-14 10 12 4 26 20 C42 16 62 18 68 36 C88 36 95 66 68 72 L-6 70 C-24 68 -25 48 -14 40 Z" fill="#70b98a"/>
+    <path d="M20 72 C22 104 16 132 20 152" stroke="#74a980" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </g>
+  <g transform="translate(1120 456)" opacity="0.94">
+    <circle cx="0" cy="0" r="76" fill="#d6e3d8"/>
+    <circle cx="0" cy="-18" r="30" fill="#7fb98f"/>
+    <circle cx="-44" cy="34" r="26" fill="#9cc9a5"/>
+    <circle cx="48" cy="42" r="20" fill="#b4d4b5"/>
+    <path d="M0 -18 C-28 -52 -46 -76 -32 -104" stroke="#487d4f" stroke-width="10" stroke-linecap="round" fill="none"/>
+  </g>
+  <g fill="#ffffff" opacity="0.8">
+    <circle cx="150" cy="74" r="7"/>
+    <circle cx="596" cy="58" r="6"/>
+    <circle cx="990" cy="112" r="8"/>
+    <circle cx="1252" cy="86" r="5"/>
+    <circle cx="760" cy="52" r="4"/>
+  </g>
+</svg>

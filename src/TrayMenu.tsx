@@ -2,9 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import type { AccountInfo, AccountUsageStats, DockDisplayMode, UsageInfo } from "./types";
 import { invokeBackend, isTauriRuntime } from "./lib/platform";
 import {
+  applySkin,
   applyTheme,
   syncThemeFromStorage,
+  SKIN_CHANGED_EVENT,
   THEME_CHANGED_EVENT,
+  type SkinId,
   type ThemeMode,
 } from "./lib/theme";
 import {
@@ -289,6 +292,7 @@ function TrayMenu() {
     let unlistenRefresh: (() => void) | undefined;
     let unlistenChanged: (() => void) | undefined;
     let unlistenTheme: (() => void) | undefined;
+    let unlistenSkin: (() => void) | undefined;
     let unlistenAutoWarmup: (() => void) | undefined;
 
     void (async () => {
@@ -304,6 +308,9 @@ function TrayMenu() {
           applyTheme(payload);
         }
       });
+      unlistenSkin = await listen<SkinId>(SKIN_CHANGED_EVENT, ({ payload }) => {
+        applySkin(payload);
+      });
       unlistenAutoWarmup = await listen<boolean>(
         AUTO_WARMUP_ALL_CHANGED_EVENT,
         ({ payload }) => {
@@ -318,6 +325,7 @@ function TrayMenu() {
       unlistenRefresh?.();
       unlistenChanged?.();
       unlistenTheme?.();
+      unlistenSkin?.();
       unlistenAutoWarmup?.();
     };
   }, [load]);
@@ -360,7 +368,7 @@ function TrayMenu() {
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-black text-xs font-bold text-white">
           C
         </div>
-        <span className="text-sm font-semibold">Codex Switcher</span>
+        <span className="text-sm font-semibold">{t("productName")}</span>
         <button
           onClick={() => void handleAutoWarmupToggle()}
           disabled={accounts.length === 0}

@@ -15,3 +15,22 @@ Task 7: complete (conservative cleanup reviewed; no diagnostic files deleted; ex
 Task 8: complete (web/Tauri language initialization and web save-error visibility fixed; 12 focused language tests, 30 frontend tests, and build clean)
 Task 9: complete (stale language load/save protection added; 13 focused language tests, 31 frontend tests, and build clean)
 Task 10: complete (serialized language saves and queue-snapshot reads; 13 focused language tests, 31 frontend tests, and build clean)
+
+Execution: 2026-09-16 default theme dashboard polish
+Task 1: complete (commits 32a2a43..35adb66, review approved; 22 focused tests, regression tests, and build clean)
+Task 2: complete (commits ff59879..f256454, review approved; 8 Playwright tests, 3 sidebar tests, regression tests, and build clean)
+Task 3: complete (commit fc9aee1, review accepted by user with exact `#8795a9` muted token retained; 14 dashboard tests, 15 regressions, 8 Playwright tests, and build clean)
+Task 4: complete (commit c27c605, review approved; 9 Playwright tests, 13 language tests, and build clean)
+Task 5: complete (commit 11f7958, review approved; 51 Node tests, 10 Playwright tests, and build clean)
+Task 6: complete (commit 671b2a9, review approved; 11 Playwright tests, 51 Node tests, and build clean)
+Task 7: complete (commit a0e906b, review approved; 46 Node tests, 32 Playwright tests, Cargo check passed; MSI/NSIS/EXE generated, overall Tauri command exit 1 because TAURI_SIGNING_PRIVATE_KEY is absent; native acceptance and mcwood contrast remain follow-ups)
+Task 8: complete (commit c4f4e32, mcwood contrast fixed with 4.5:1 regression coverage; 15 dashboard tests, 32 Playwright tests, build clean; updated MSI/NSIS/EXE generated but signing still requires TAURI_SIGNING_PRIVATE_KEY; release EXE smoke-launched with visible Codex Switcher window; full installed-app native checklist remains manual)
+Final fix wave: complete (commit 7d44be7, independent review approved; current-account delete confirmation, masking, small-account search, rename/reset credits, warmup guards, Close Codex action, stats persistence/status, More-menu dismissal/focus, and stateful UI coverage restored; fresh Node 60/60, Playwright 37/37, Dashboard 15/15, build, and Cargo check passed)
+Final whole-branch review: approved (review .superpowers/sdd/final-branch-review-r2.md; exact #8795a9 retained, 13 skins/five pages/responsive floor preserved; native acceptance and TAURI_SIGNING_PRIVATE_KEY remain release follow-ups)
+Latest Windows build: EXE/MSI/NSIS regenerated from 7d44be7; EXE smoke-launched successfully; updater signing still stops the command after bundles are produced because TAURI_SIGNING_PRIVATE_KEY is not configured.
+
+Execution: 2026-09-16 ChatGPT Account Hub branding
+Task 1: complete (commit d609d3c, review approved; centralized owned-repository links, stale URL checks 2/2, and build clean)
+Task 2: complete (commits de9ea02..c244fd2, review approved after fix pass; visible branding, HTML titles, README asset names, and executable-compatible macOS command aligned)
+Task 3: complete (commit aeeeaee, review approved; SVG/PNG/ICO/ICNS/托盘及平台图标重新生成，branding 4/4 and build clean)
+Task 4: complete (commits 3809485 plus final bookkeeping; Node 64/64, Playwright 37/37, dashboard 15/15, theme 3/3, build and Cargo check passed; EXE/zh-CN MSI/NSIS generated with recorded SHA-256 values and EXE smoke-launched under the ChatGPT 账号管家 title; updater signing remains blocked by missing TAURI_SIGNING_PRIVATE_KEY, and the existing __TAURI_BUNDLE_TYPE warning is recorded for release follow-up)
