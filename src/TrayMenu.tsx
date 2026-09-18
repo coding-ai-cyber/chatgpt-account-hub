@@ -368,7 +368,7 @@ function TrayMenu() {
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-black text-xs font-bold text-white">
           C
         </div>
-        <span className="text-sm font-semibold">ChatGPT 账号管家</span>
+        <span className="text-sm font-semibold">{t("productName")}</span>
         <button
           onClick={() => void handleAutoWarmupToggle()}
           disabled={accounts.length === 0}

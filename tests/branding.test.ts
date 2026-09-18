@@ -64,9 +64,10 @@ test("visible surfaces use the ChatGPT account hub brand", () => {
   const visibleSurfaces = [
     ["index.html", ["<title>ChatGPT 账号管家</title>"]],
     ["tray.html", ["<title>ChatGPT 账号管家 · 托盘</title>"]],
+    ["tests/ui/preview.html", ["ChatGPT Account Hub"]],
     ["src/lib/i18n.tsx", ["ChatGPT 账号管家", "ChatGPT Account Hub"]],
-    ["src/components/layout/Sidebar.tsx", ["ChatGPT 账号管家"]],
-    ["src/TrayMenu.tsx", ["ChatGPT 账号管家"]],
+    ["src/components/layout/Sidebar.tsx", []],
+    ["src/TrayMenu.tsx", []],
     ["src-tauri/tauri.conf.json", ["ChatGPT 账号管家"]],
     ["src-tauri/tauri.windows.conf.json", ["ChatGPT 账号管家"]],
     ["src-tauri/tauri.macos.conf.json", ["ChatGPT 账号管家"]],
@@ -99,6 +100,19 @@ test("visible surfaces use the ChatGPT account hub brand", () => {
     }
   }
 
+  const sidebarSource = readFileSync(
+    resolve(root, "src/components/layout/Sidebar.tsx"),
+    "utf8",
+  );
+  const trayMenuSource = readFileSync(
+    resolve(root, "src/TrayMenu.tsx"),
+    "utf8",
+  );
+  assert.match(sidebarSource, /t\("productName"\)/);
+  assert.equal(sidebarSource.includes("ChatGPT 账号管家"), false);
+  assert.match(trayMenuSource, /t\("productName"\)/);
+  assert.equal(trayMenuSource.includes("ChatGPT 账号管家"), false);
+
   const processSource = readFileSync(
     resolve(root, "src-tauri/src/commands/process.rs"),
     "utf8",
@@ -119,7 +133,7 @@ test("visible surfaces use the ChatGPT account hub brand", () => {
     "ChatGPT 账号管家_*_aarch64.dmg",
     "ChatGPT 账号管家_*_x64.dmg",
     "ChatGPT 账号管家_*_x64-setup.exe",
-    "ChatGPT 账号管家_*_x64_en-US.msi",
+    "ChatGPT 账号管家_*_x64_zh-CN.msi",
     "ChatGPT 账号管家_*_amd64.deb",
     "ChatGPT 账号管家_*_amd64.AppImage",
     "ChatGPT 账号管家-*-1.x86_64.rpm",

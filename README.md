@@ -41,7 +41,7 @@ Choose the file for your platform:
 
 - **macOS Apple Silicon:** `ChatGPT 账号管家_*_aarch64.dmg`
 - **macOS Intel:** `ChatGPT 账号管家_*_x64.dmg`
-- **Windows:** `ChatGPT 账号管家_*_x64-setup.exe` or `ChatGPT 账号管家_*_x64_en-US.msi`
+- **Windows:** `ChatGPT 账号管家_*_x64-setup.exe` or `ChatGPT 账号管家_*_x64_zh-CN.msi`
 - **Linux Debian/Ubuntu:** `ChatGPT 账号管家_*_amd64.deb`
 - **Linux AppImage:** `ChatGPT 账号管家_*_amd64.AppImage`
 - **Linux RPM:** `ChatGPT 账号管家-*-1.x86_64.rpm`
